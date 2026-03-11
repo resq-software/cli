@@ -1,0 +1,259 @@
+/*
+ * Copyright 2026 ResQ
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+//! Shared TUI components and themes for `ResQ` developer tools.
+//! Inspired by binsider architecture.
+
+use ratatui::{
+    layout::{Alignment, Constraint, Layout, Rect},
+    style::{Color, Modifier, Style, Stylize},
+    text::{Line, Span},
+    widgets::{Block, BorderType, Borders, Paragraph, Tabs},
+    Frame,
+};
+
+// ---------------------------------------------------------------------------
+// UI Theme
+// ---------------------------------------------------------------------------
+
+/// Spinner animation frames for loading indicators.
+pub const SPINNER_FRAMES: &[&str] = &["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+/// Standard `ResQ` TUI Theme.
+pub struct Theme {
+    /// Primary brand color (Cyan)
+    pub primary: Color,
+    /// Secondary supporting color (Blue)
+    pub secondary: Color,
+    /// Accent color for PID/Metadata (Magenta)
+    pub accent: Color,
+    /// Success state (Green)
+    pub success: Color,
+    /// Warning/Pending state (Yellow)
+    pub warning: Color,
+    /// Error/Critical state (Red)
+    pub error: Color,
+    /// Background color
+    pub bg: Color,
+    /// Foreground text color
+    pub fg: Color,
+    /// Highlight/Selection color
+    pub highlight: Color,
+    /// Inactive/Muted color (`DarkGray`)
+    pub inactive: Color,
+}
+
+impl Default for Theme {
+    fn default() -> Self {
+        Self {
+            primary: Color::Cyan,
+            secondary: Color::Blue,
+            accent: Color::Magenta,
+            success: Color::Green,
+            warning: Color::Yellow,
+            error: Color::Red,
+            bg: Color::Black,
+            fg: Color::White,
+            highlight: Color::Rgb(50, 50, 50),
+            inactive: Color::DarkGray,
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Shared Widgets
+// ---------------------------------------------------------------------------
+
+/// Renders a standardized header with service metadata and PID.
+#[allow(clippy::too_many_arguments)]
+pub fn draw_header(
+    frame: &mut Frame,
+    area: Rect,
+    title: &str,
+    status: &str,
+    status_color: Color,
+    pid: Option<i32>,
+    url: &str,
+    theme: &Theme,
+) {
+    let pid_info = pid.map_or_else(|| "PID: ?".to_string(), |p| format!("PID: {p}"));
+
+    let header_content = Line::from(vec![
+        Span::styled(
+            format!(" 🔬 {} ", title.to_uppercase()),
+            Style::default()
+                .fg(theme.primary)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::raw(" │ "),
+        Span::styled(status, Style::default().fg(status_color)),
+        Span::raw(" │ "),
+        Span::styled(pid_info, Style::default().fg(theme.accent)),
+        Span::raw(" │ ").fg(theme.inactive),
+        Span::styled(
+            url,
+            Style::default()
+                .fg(theme.secondary)
+                .add_modifier(Modifier::ITALIC),
+        ),
+    ]);
+
+    let header = Paragraph::new(header_content).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .border_style(Style::default().fg(theme.primary)),
+    );
+
+    frame.render_widget(header, area);
+}
+
+/// Renders a standardized footer with keyboard shortcuts.
+pub fn draw_footer(frame: &mut Frame, area: Rect, keys: &[(&str, &str)], theme: &Theme) {
+    let mut spans = Vec::with_capacity(keys.len() * 2);
+    for (k, v) in keys {
+        spans.push(Span::styled(
+            format!(" {k} "),
+            Style::default()
+                .fg(theme.bg)
+                .bg(theme.primary)
+                .add_modifier(Modifier::BOLD),
+        ));
+        spans.push(Span::styled(
+            format!(" {v} "),
+            Style::default().fg(theme.fg),
+        ));
+        spans.push(Span::raw("  "));
+    }
+
+    let footer = Paragraph::new(Line::from(spans)).block(
+        Block::default()
+            .borders(Borders::ALL)
+            .border_type(BorderType::Rounded)
+            .border_style(Style::default().fg(theme.primary)),
+    );
+
+    frame.render_widget(footer, area);
+}
+
+/// Renders a standardized tab bar.
+pub fn draw_tabs(frame: &mut Frame, area: Rect, titles: Vec<&str>, selected: usize) {
+    let theme = Theme::default();
+
+    let tabs = Tabs::new(titles)
+        .block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Rounded),
+        )
+        .select(selected)
+        .style(Style::default().fg(theme.primary))
+        .highlight_style(Style::default().fg(theme.warning).bold().underlined());
+
+    frame.render_widget(tabs, area);
+}
+
+/// Renders a centered popup for help or errors.
+#[allow(clippy::too_many_arguments)]
+pub fn draw_popup(
+    frame: &mut Frame,
+    area: Rect,
+    title: &str,
+    lines: &[Line],
+    percent_x: u16,
+    percent_y: u16,
+    theme: &Theme,
+) {
+    let popup_area = centered_rect(percent_x, percent_y, area);
+
+    // Clear background
+    frame.render_widget(
+        Block::default().style(Style::default().bg(theme.bg)),
+        popup_area,
+    );
+
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .border_type(BorderType::Rounded)
+        .border_style(Style::default().fg(theme.primary))
+        .title(format!(" {title} "))
+        .style(Style::default().bg(theme.bg));
+
+    let inner = block.inner(popup_area);
+    frame.render_widget(block, popup_area);
+
+    let paragraph = Paragraph::new(lines.to_vec())
+        .alignment(Alignment::Left)
+        .style(Style::default().fg(theme.fg));
+
+    frame.render_widget(paragraph, inner);
+}
+
+/// Helper to create a centered rectangle for popups.
+#[must_use]
+pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
+    let popup_layout = Layout::vertical([
+        Constraint::Percentage((100 - percent_y) / 2),
+        Constraint::Percentage(percent_y),
+        Constraint::Percentage((100 - percent_y) / 2),
+    ])
+    .split(r);
+
+    Layout::horizontal([
+        Constraint::Percentage((100 - percent_x) / 2),
+        Constraint::Percentage(percent_x),
+        Constraint::Percentage((100 - percent_x) / 2),
+    ])
+    .split(popup_layout[1])[1]
+}
+
+// ---------------------------------------------------------------------------
+// Common Utilities
+// ---------------------------------------------------------------------------
+
+/// Formats bytes into human-readable units.
+#[must_use]
+#[allow(clippy::cast_precision_loss)]
+pub fn format_bytes(bytes: u64) -> String {
+    if bytes < 1024 {
+        format!("{bytes} B")
+    } else if bytes < 1024 * 1024 {
+        format!("{:.1} KB", bytes as f64 / 1024.0)
+    } else if bytes < 1024 * 1024 * 1024 {
+        format!("{:.1} MB", bytes as f64 / (1024.0 * 1024.0))
+    } else {
+        format!("{:.2} GB", bytes as f64 / (1024.0 * 1024.0 * 1024.0))
+    }
+}
+
+/// Formats seconds into human-readable duration.
+#[must_use]
+pub fn format_duration(seconds: u64) -> String {
+    let days = seconds / 86400;
+    let hours = (seconds % 86400) / 3600;
+    let minutes = (seconds % 3600) / 60;
+    let secs = seconds % 60;
+
+    if days > 0 {
+        format!("{days}d {hours}h {minutes}m")
+    } else if hours > 0 {
+        format!("{hours}h {minutes}m {secs}s")
+    } else if minutes > 0 {
+        format!("{minutes}m {secs}s")
+    } else {
+        format!("{secs}s")
+    }
+}
