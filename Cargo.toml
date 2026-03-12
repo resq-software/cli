@@ -13,7 +13,17 @@
 # limitations under the License.
 
 [workspace]
-members = ["resq-tui", "cli"]
+members = [
+    "resq-tui",
+    "cli",
+    "deploy-cli",
+    "health-checker",
+    "log-viewer",
+    "perf-monitor",
+    "flame-graph",
+    "bin-explorer",
+    "cleanup",
+]
 resolver = "2"
 
 [workspace.package]
