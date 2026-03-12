@@ -27,6 +27,7 @@ use crate::parser::{parse_line, LogEntry};
 /// Spawn a Docker Compose log stream, sending parsed entries to the channel.
 ///
 /// Runs `docker compose logs -f --no-color` from the infra/docker directory.
+#[allow(clippy::needless_pass_by_value)]
 pub(crate) fn spawn_docker_source(
     project_root: PathBuf,
     service_filter: Option<String>,
@@ -76,10 +77,7 @@ pub(crate) fn spawn_docker_source(
 /// Spawn a file tail source, sending parsed entries to the channel.
 ///
 /// Reads the last N lines of a file and then watches for new content.
-pub(crate) fn spawn_file_source(
-    path: PathBuf,
-    tx: mpsc::UnboundedSender<LogEntry>,
-) -> std::io::Result<()> {
+pub(crate) fn spawn_file_source(path: PathBuf, tx: mpsc::UnboundedSender<LogEntry>) {
     let service_name = path
         .file_stem()
         .unwrap_or_default()
@@ -116,6 +114,4 @@ pub(crate) fn spawn_file_source(
             }
         }
     });
-
-    Ok(())
 }

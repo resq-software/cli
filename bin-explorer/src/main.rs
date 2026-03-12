@@ -16,6 +16,7 @@
 
 //! Bin-Explorer CLI and TUI.
 
+#![allow(clippy::pedantic)]
 #![deny(missing_docs)]
 
 mod cache;

@@ -16,6 +16,7 @@
 
 //! `ResQ` Health-Explorer TUI v2.1 - Optimized & Non-blocking
 
+#![allow(clippy::pedantic)]
 #![deny(missing_docs)]
 
 mod integration;

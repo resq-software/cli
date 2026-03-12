@@ -171,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         "file" => {
             let path = args.path.map_or_else(|| PathBuf::from("."), PathBuf::from);
-            sources::spawn_file_source(path, tx)?;
+            sources::spawn_file_source(path, tx);
         }
         other => {
             eprintln!("Unknown source: {other}. Use 'docker' or 'file'.");

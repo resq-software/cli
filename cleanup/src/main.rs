@@ -125,9 +125,9 @@ impl App {
         }
     }
 
-    fn delete_selected(&mut self) -> Result<()> {
+    fn delete_selected(&mut self) {
         if self.dry_run {
-            return Ok(());
+            return;
         }
         for entry in self.entries.iter().filter(|e| e.selected) {
             if entry.is_dir {
@@ -137,7 +137,6 @@ impl App {
             }
         }
         self.scan();
-        Ok(())
     }
 }
 
@@ -172,7 +171,7 @@ async fn main() -> Result<()> {
                     KeyCode::Char('q') | KeyCode::Esc => break,
                     KeyCode::Char(' ') => app.toggle_selected(),
                     KeyCode::Enter => {
-                        app.delete_selected()?;
+                        app.delete_selected();
                         if app.dry_run {
                             break;
                         }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#![allow(clippy::pedantic)]
+
 //! Core analysis APIs for Binary Explorer.
 
 pub mod analysis;

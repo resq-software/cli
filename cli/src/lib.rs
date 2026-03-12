@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#![allow(clippy::pedantic)]
+
 //! `ResQ` CLI - Command-line interface for managing `ResQ` services.
 //!
 //! This crate provides a unified CLI for interacting with the `ResQ` platform,

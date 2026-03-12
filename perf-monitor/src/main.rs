@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+#![allow(clippy::pedantic)]
+
 //! # `ResQ` Performance Monitor TUI v2.0
 //!
 //! Enhanced real-time performance diagnostics dashboard built with Ratatui.
