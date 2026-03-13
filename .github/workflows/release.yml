@@ -25,13 +25,9 @@ jobs:
       - name: Wait for resq-tui to index
         run: sleep 60
 
-      - name: Publish resq-cli
-        run: cargo publish -p resq-cli
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
-
-      - name: Publish tools (parallel batch)
+      - name: Publish resq-cli and tools (all depend on resq-tui)
         run: |
+          cargo publish -p resq-cli &
           cargo publish -p resq-deploy-cli &
           cargo publish -p resq-health-checker &
           cargo publish -p resq-log-viewer &
