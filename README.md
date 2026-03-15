@@ -1,208 +1,174 @@
-<!--
-  Copyright 2026 ResQ
+# resq CLI Documentation
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-
-<h1 align="center">resq CLI</h1>
-
-<p align="center">
-  Developer and operations tooling for the ResQ autonomous drone platform — a unified CLI and suite of TUI tools.
-</p>
-
-<p align="center">
-  <a href="https://github.com/resq-software/cli/actions/workflows/ci.yml">
-    <img src="https://img.shields.io/github/actions/workflow/status/resq-software/cli/ci.yml?branch=main&label=ci&style=flat-square" alt="CI" />
-  </a>
-  <a href="https://crates.io/crates/resq-cli">
-    <img src="https://img.shields.io/crates/v/resq-cli?style=flat-square" alt="crates.io" />
-  </a>
-  <a href="https://codecov.io/gh/resq-software/cli">
-    <img src="https://codecov.io/gh/resq-software/cli/graph/badge.svg" alt="Coverage" />
-  </a>
-  <a href="./LICENSE">
-    <img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square" alt="License: Apache-2.0" />
-  </a>
-</p>
+![CI](https://img.shields.io/github/actions/workflow/status/resq-software/cli/ci.yml?branch=main&label=ci&style=flat-square)
+![crates.io](https://img.shields.io/crates/v/resq-cli?style=flat-square)
+![Coverage](https://codecov.io/gh/resq-software/cli/graph/badge.svg)
+![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square)
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Tools](#tools)
-- [Install](#install)
+- [Features](#features)
+- [Architecture](#architecture)
 - [Quick Start](#quick-start)
-- [Commands](#commands)
+- [Usage Examples](#usage-examples)
 - [Configuration](#configuration)
+- [API Overview](#api-overview)
+- [Development](#development)
 - [Contributing](#contributing)
-- [Changelog](#changelog)
+- [Roadmap](#roadmap)
 - [License](#license)
 
 ---
 
 ## Overview
 
-`resq` is a Rust workspace of developer-facing CLI and TUI tools for the [ResQ platform](https://resq.software). It automates the workflows that slow teams down: copyright enforcement, secret scanning, health diagnostics, performance profiling, structured log viewing, and deployment orchestration — all from a single entry point.
+`resq` is a high-performance Rust workspace providing a unified CLI and TUI toolchain for the ResQ autonomous drone platform. It is engineered to streamline developer workflows by consolidating auditing, security, performance monitoring, and deployment orchestration into a single, cohesive binary.
 
-**Related projects:**
-
-| Repo | Description |
-|------|-------------|
-| [resq-software/resQ](https://github.com/resq-software/resQ) | Core platform monorepo |
-| [resq-software/mcp](https://github.com/resq-software/mcp) | MCP server |
-| [resq-software/ui](https://github.com/resq-software/ui) | Shared component library |
-| [resq-software/dotnet-sdk](https://github.com/resq-software/dotnet-sdk) | .NET SDK |
+The project leverages [Ratatui](https://github.com/ratatui-org/ratatui) for rich terminal user interfaces, ensuring that complex operations—like service health diagnostics or binary analysis—remain readable and interactive.
 
 ---
 
-## Tools
+## Features
 
-| Crate | Binary | Description |
-|-------|--------|-------------|
-| `resq-cli` | `resq` | Unified entry point — copyright, secrets, audit, versioning, pre-commit TUI |
-| `deploy-cli` | `resq-deploy` | Deployment orchestration TUI for Docker Compose and Kubernetes |
-| `health-checker` | `resq-health` | Service and dependency health diagnostic dashboard |
-| `log-viewer` | `resq-logs` | Multi-source structured log aggregator |
-| `perf-monitor` | `resq-perf` | Real-time CPU and memory metrics TUI |
-| `flame-graph` | `resq-flame` | SVG CPU flame graph generator for polyglot services |
-| `bin-explorer` | `bin_explorer` | Binary and machine-code analyser |
-| `cleanup` | `resq-clean` | `.gitignore`-aware workspace cleaner |
-| `resq-tui` | `resq-tui` | Shared Ratatui component library used across all tools |
+*   **Security First:** Integrated secret scanning and repository auditing.
+*   **Performance Monitoring:** Real-time metrics and flame graph generation for polyglot services.
+*   **Orchestration:** TUI-based Kubernetes and Docker Compose deployment management.
+*   **Developer Productivity:** Automated copyright header enforcement, tree-shaking, and `.gitignore`-aware workspace cleaning.
+*   **Unified TUI Library:** Shared component library (`resq-tui`) ensuring consistent UX across the entire toolchain.
 
 ---
 
-## Install
+## Architecture
 
-### From crates.io
+The project is structured as a Rust workspace to promote code reuse and modularity. Each domain-specific tool is encapsulated as its own crate.
 
-```sh
-cargo install resq-cli
-```
-
-### From source
-
-```sh
-git clone https://github.com/resq-software/cli.git
-cd cli
-cargo build --release --workspace
-# Binaries land in ./target/release/
-```
-
-### Docker
-
-```sh
-docker build -t resq-cli .
-docker run --rm resq-cli --help
-```
-
-### Dev environment (Nix)
-
-```sh
-nix develop        # Rust stable, cargo-watch, cargo-nextest, openssl
-# or:
-./scripts/setup.sh # installs Nix + Docker; configures git hooks
+```mermaid
+graph TD
+    CLI[resq-cli] --> Core[resq-tui Library]
+    Core --> UI[Ratatui Components]
+    CLI --> Commands[Command Modules]
+    Commands --> Health[resq-health]
+    Commands --> Deploy[resq-deploy]
+    Commands --> Logs[resq-logs]
+    Commands --> Perf[resq-perf]
+    Commands --> Bin[bin-explorer]
 ```
 
 ---
 
 ## Quick Start
 
+### Installation
+
+**Via Cargo:**
 ```sh
-# Check copyright headers across the repo
+cargo install resq-cli
+```
+
+**From Source:**
+```sh
+git clone https://github.com/resq-software/cli.git
+cd cli
+cargo build --release --workspace
+```
+
+### Basic Command Execution
+
+Check copyright headers and run security scans to ensure workspace compliance:
+
+```sh
+# Ensure all files have the correct Apache-2.0 license headers
 resq copyright --check
 
-# Scan for leaked secrets
+# Scan for accidentally committed secrets
 resq secrets
-
-# Run pre-commit checks interactively
-resq pre-commit
 ```
 
 ---
 
-## Commands
+## Usage Examples
 
-| Command | Description |
-|---------|-------------|
-| `resq copyright` | Check and fix copyright headers across the workspace |
-| `resq secrets` | Scan for leaked credentials and secrets |
-| `resq audit` | Audit blockchain events |
-| `resq cost` | Estimate cloud resource costs |
-| `resq lqip` | Generate low-quality image placeholders |
-| `resq tree-shake` | Remove unused exports (`tsr` wrapper) |
-| `resq dev` | Start the development server |
-| `resq pre-commit` | Run pre-commit checks (TUI) |
-| `resq version` | Manage versions and changesets |
-| `resq docs` | Export and publish documentation |
-| `resq explore` | Launch Perf-Explorer TUI |
-| `resq logs` | Launch Log-Explorer TUI |
-| `resq health` | Launch Health-Explorer TUI |
-| `resq deploy` | Launch Deploy-Explorer TUI |
-| `resq clean` | Launch Cleanup-Explorer TUI (`--dry-run` supported) |
-| `resq asm` | Launch Asm-Explorer for machine code analysis |
+### 1. Interactive Pre-commit Audit
+Instead of manual checks, launch the interactive TUI audit tool:
+```sh
+resq pre-commit
+```
+
+### 2. Service Health Monitoring
+Inspect service dependencies and health status in a real-time dashboard:
+```sh
+resq health
+```
+
+### 3. Binary Analysis
+Analyze machine code and symbol exports for compiled binaries:
+```sh
+resq explore ./path/to/binary
+```
 
 ---
 
 ## Configuration
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `GIT_HOOKS_SKIP` | unset | Set to any value to bypass pre-commit hooks |
-| `RESQ_NIX_RECURSION` | unset | Internal guard preventing infinite re-exec inside `nix develop` |
+| Environment Variable | Description |
+| :--- | :--- |
+| `GIT_HOOKS_SKIP` | Disables automated pre-commit hooks. |
+| `RESQ_NIX_RECURSION` | Internal safety flag for recursive execution in Nix environments. |
+
+Configuration for specific tools (e.g., health-checker) can often be found in `.env` files within the respective crate directories.
+
+---
+
+## API Overview
+
+The `resq` CLI provides a sub-command-based interface:
+
+- `resq audit`: Execute repository/blockchain event audits.
+- `resq cost`: Calculate infrastructure/cloud resource consumption.
+- `resq tree-shake`: Optimize module exports.
+- `resq version`: Automate release versioning and change management.
+- `resq deploy`: Launch the deployment orchestration dashboard.
+
+---
+
+## Development
+
+The project utilizes `Nix` for reproducible development environments.
+
+1. **Setup:** Run `./scripts/setup.sh` to configure local git hooks and install necessary dependencies.
+2. **Environment:** Enter the shell with `nix develop`.
+3. **Testing:** Execute `cargo nextest run` for optimized parallel testing.
+
+### Git Hooks
+The repository enforces strict quality standards via `.git-hooks/`. Ensure these are active by running the setup script provided in the root.
 
 ---
 
 ## Contributing
 
-We welcome contributions. Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) before opening a PR.
+We strictly adhere to [Conventional Commits](https://www.conventionalcommits.org/).
 
-**Local setup:**
+1. **Fork** the repository.
+2. **Feature Branch:** Create a branch following `feat/`, `fix/`, or `refactor/`.
+3. **Commit:** Ensure your messages match the `type(scope): subject` format.
+4. **Pull Request:** Link to relevant issues and ensure the CI pipeline (including `osv-scan` and `clippy`) passes.
 
-```sh
-git clone https://github.com/resq-software/cli.git
-cd cli
-./scripts/setup.sh   # installs Nix + Docker; enters nix develop; configures .git-hooks/
-```
-
-**Run tests:**
-
-```sh
-cargo nextest run
-```
-
-**Commit convention:** This project uses [Conventional Commits](https://www.conventionalcommits.org/).
-All PRs must follow the `type(scope): subject` format — see the table below.
-
-| Prefix | Effect on version |
-|--------|------------------|
-| `feat:` | Minor bump (`0.x.0`) |
-| `fix:` / `perf:` | Patch bump (`0.0.x`) |
-| `BREAKING CHANGE` footer or `!` suffix | Major bump (`x.0.0`) |
-| `docs:` `style:` `refactor:` `test:` `chore:` | No version bump |
-
-Releases are automated via [release-plz](https://release-plz.dev) on merge to `main`.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## Changelog
+## Roadmap
 
-See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
+- [ ] Support for custom plugin registration in `resq-cli`.
+- [ ] Integration of remote Telemetry aggregation in `resq-perf`.
+- [ ] Expanded support for cross-platform binary analysis (ARM/x86_64).
+- [ ] Auto-fix capability for secret leaks.
 
 ---
 
 ## License
 
-Copyright 2026 ResQ
-
-Licensed under the [Apache License, Version 2.0](./LICENSE).
+Copyright 2026 ResQ. Licensed under the [Apache License, Version 2.0](./LICENSE).
