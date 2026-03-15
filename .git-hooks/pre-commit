@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Copyright 2026 ResQ
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -euo pipefail
+
+# HOOK_PATH stores the absolute path to this script.
+if [ ${#BASH_SOURCE[@]} -gt 0 ] && [ -n "${BASH_SOURCE[0]:-}" ]; then
+    HOOK_PATH="${BASH_SOURCE[0]}"
+else
+    HOOK_PATH="$0"
+fi
+
+# Resolve symlinks
+HOOK_PATH=$(readlink -f "$HOOK_PATH")
+# SCRIPT_DIR stores the absolute path to the hooks directory.
+SCRIPT_DIR=$(dirname "$HOOK_PATH")
+# PROJECT_ROOT stores the absolute path to the project root.
+PROJECT_ROOT=$(cd "$SCRIPT_DIR/.." && pwd)
+
+[ -n "${GIT_HOOKS_SKIP:-}" ] && exit 0
+
+# ── Resolve resq CLI binary ─────────────────────────────────────────────────
+RESQ_BIN=""
+if command -v resq >/dev/null 2>&1; then
+    RESQ_BIN="resq"
+elif [ -f "$PROJECT_ROOT/target/release/resq" ]; then
+    RESQ_BIN="$PROJECT_ROOT/target/release/resq"
+elif [ -f "$PROJECT_ROOT/target/debug/resq" ]; then
+    RESQ_BIN="$PROJECT_ROOT/target/debug/resq"
+elif command -v cargo >/dev/null 2>&1; then
+    echo "📦 Building resq CLI for pre-commit checks..."
+    cargo build -q -p resq-cli
+    RESQ_BIN="$PROJECT_ROOT/target/debug/resq"
+fi
+
+if [ -z "$RESQ_BIN" ]; then
+    echo "⚠️  ResQ CLI not found and cannot be built. Skipping pre-commit checks."
+    exit 0
+fi
+
+# ── Delegate to Rust CLI ─────────────────────────────────────────────────────
+# This runs: copyright, secrets, audit, formatting, and versioning prompt
+exec "$RESQ_BIN" pre-commit --root "$PROJECT_ROOT" "$@"

@@ -14,43 +14,40 @@
   limitations under the License.
 -->
 
-# perf-monitor — Performance Dashboard
+# resq-perf — Performance Dashboard
 
-Ratatui terminal UI showing live CPU usage, memory consumption, and request metrics for ResQ services. Pulls data from the services' `/metrics` endpoints.
+Ratatui terminal UI showing live CPU usage, memory consumption, and request metrics for ResQ services. Pulls data from the services' `/status` endpoints (compatible with `coordination-hce`).
 
 ## Build
 
 ```bash
-cargo build --release --manifest-path tools/Cargo.toml -p resq-perf-monitor
+# Build from workspace root
+cargo build --release -p resq-perf-monitor
 ```
 
-Binary: `tools/perf-monitor/target/release/perf-monitor`
+Binary: `target/release/resq-perf`
 
 ## Usage
 
 ```bash
-# Monitor all services (default: http://localhost:5000)
-perf-monitor
+# Monitor HCE service (default: http://localhost:3000/admin/status)
+resq-perf
 
-# Target a specific service URL
-perf-monitor --url http://localhost:3000
+# Target a specific service status URL (positional argument)
+resq-perf http://localhost:3000/admin/status
 
-# Authenticated service (coordination-hce uses JWT)
-perf-monitor --url http://localhost:3000 --token eyJhbGc...
+# Authenticated service (reads RESQ_TOKEN env var)
+resq-perf --token eyJhbGc...
 
-# Infrastructure API uses RESQ_API_KEY header
-perf-monitor --url http://localhost:5000 --api-key your-api-key
-
-# Adjust refresh rate (default: 2 seconds)
-perf-monitor --refresh 5
+# Adjust refresh rate in milliseconds
+resq-perf --refresh-ms 1000
 ```
 
 Environment variables are also accepted:
 
 ```bash
 export RESQ_TOKEN=eyJhbGc...
-export RESQ_API_KEY=your-key
-perf-monitor --url http://localhost:3000
+resq-perf http://localhost:3000/admin/status
 ```
 
 ## TUI Layout
@@ -83,20 +80,15 @@ perf-monitor --url http://localhost:3000
 
 ## Authentication
 
-| Service | Auth header | Flag |
-|---------|-------------|------|
-| coordination-hce | `Authorization: Bearer <token>` | `--token` / `RESQ_TOKEN` |
-| infrastructure-api | `X-API-Key: <key>` | `--api-key` / `RESQ_API_KEY` |
-| intelligence-pdie | `X-API-Key: <key>` | `--api-key` / `RESQ_API_KEY` |
+The performance monitor supports Bearer token authentication via the `--token` flag or the `RESQ_TOKEN` environment variable. This is compatible with the `coordination-hce` service's admin endpoints.
 
 ## Flags
 
-| Flag | Default | Description |
+| Argument / Flag | Default | Description |
 |------|---------|-------------|
-| `--url <url>` | `http://localhost:5000` | Service base URL |
-| `--token <jwt>` | `$RESQ_TOKEN` | Bearer token for JWT-authenticated services |
-| `--api-key <key>` | `$RESQ_API_KEY` | API key for key-authenticated services |
-| `--refresh <secs>` | `2` | Metrics refresh interval in seconds |
+| `url` | `http://localhost:3000/admin/status` | Positional: status endpoint to monitor |
+| `--token <jwt>` | `$RESQ_TOKEN` | Bearer token for authenticated services |
+| `--refresh-ms <ms>` | `500` | Refresh interval in milliseconds |
 
 ## Related
 

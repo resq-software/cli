@@ -14,42 +14,44 @@
   limitations under the License.
 -->
 
-# health-checker — Service Health Monitor
+# resq-health — Service Health Monitor
 
 Ratatui terminal UI that polls all ResQ service health endpoints and displays live status with latency. Doubles as a CI health gate via `--check`.
 
 ## Build
 
 ```bash
-cargo build --release --manifest-path tools/Cargo.toml -p resq-health-checker
+# Build from workspace root
+cargo build --release -p resq-health-checker
 ```
 
-Binary: `tools/health-checker/target/release/health-checker`
+Binary: `target/release/resq-health`
 
 ## Usage
 
 ```bash
 # Interactive TUI (auto-refreshes every 5 seconds)
-health-checker
+resq-health
 
 # CI mode — single check, exits non-zero on unhealthy services
-health-checker --check
+resq-health --check
 
 # Adjust refresh interval
-health-checker --interval 10
+resq-health --interval 10
 
 # Run integration tests defined in a JSON file
-health-checker --test tests/integration.json
+resq-health --test tests/integration.json
 ```
 
 ## Services Monitored
 
 | Service | Default URL | Health Endpoint |
 |---------|-------------|-----------------|
-| infrastructure-api | `http://localhost:8080` | `GET /health` |
 | coordination-hce | `http://localhost:5000` | `GET /health` |
-| intelligence-pdie | `http://localhost:8080` | `GET /health` |
-| web-dashboard | `http://localhost:3000` | `GET /api/health` |
+| infrastructure-api | `http://localhost:8080` | `GET /health` |
+| intelligence-pdie | `http://localhost:8000` | `GET /health` |
+| neo-n3-rpc | `http://localhost:20332` | `POST /` (JSON-RPC) |
+| ipfs-gateway | `http://localhost:8081` | `GET /api/v0/version` |
 
 Requests time out after 5 seconds. Services that don't respond within the timeout are marked **Unhealthy**.
 
@@ -93,7 +95,7 @@ In `--check` mode the TUI is not shown. Health checks run once and the process e
 
 ```bash
 # Use in CI / pre-deploy gates
-health-checker --check || { echo "Services not ready"; exit 1; }
+resq-health --check || { echo "Services not ready"; exit 1; }
 ```
 
 ## Integration Tests (`--test`)
@@ -119,7 +121,7 @@ Pass a JSON file defining HTTP assertions to run against the live services:
 ```
 
 ```bash
-health-checker --test tools/health-checker/tests/smoke.json
+resq-health --test tools/resq-health/tests/smoke.json
 ```
 
 ## Flags

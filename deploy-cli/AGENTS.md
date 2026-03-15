@@ -19,8 +19,8 @@ Interactive deployment manager for ResQ environments. Coordinates Docker Compose
 
 ## Commands
 ```bash
-cargo build -p deploy-cli
-cargo test -p deploy-cli
+cargo build -p resq-deploy-cli
+cargo test -p resq-deploy-cli
 ```
 
 ## Rules

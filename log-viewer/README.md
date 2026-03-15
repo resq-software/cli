@@ -14,32 +14,33 @@
   limitations under the License.
 -->
 
-# log-viewer — Log Aggregator
+# resq-logs — Log Aggregator
 
 Ratatui terminal UI that streams and aggregates logs from Docker Compose containers or local files. Supports live search, log-level filtering, and scrolling through a 10,000-line ring buffer.
 
 ## Build
 
 ```bash
-cargo build --release --manifest-path tools/Cargo.toml -p resq-log-viewer
+# Build from workspace root
+cargo build --release -p resq-log-viewer
 ```
 
-Binary: `tools/log-viewer/target/release/log-viewer`
+Binary: `target/release/resq-logs`
 
 ## Usage
 
 ```bash
 # Stream all Docker Compose service logs
-log-viewer --source docker
+resq-logs --source docker
 
 # Stream logs from a specific service only
-log-viewer --source docker --service infrastructure-api
+resq-logs --source docker --service infrastructure-api
 
 # Tail a log file
-log-viewer --source file --path services/infrastructure-api/logs/api.log
+resq-logs --source file --path services/infrastructure-api/logs/api.log
 
 # Start with error-level filter active
-log-viewer --source docker --level error
+resq-logs --source docker --level error
 ```
 
 ## TUI Layout
@@ -86,7 +87,7 @@ Requires a running Docker Compose stack. The viewer reads from whichever `docker
 Tails a local log file (equivalent to `tail -F`). Watches for file rotation.
 
 ```bash
-log-viewer --source file --path /var/log/resq/infrastructure-api.log
+resq-logs --source file --path /var/log/resq/infrastructure-api.log
 ```
 
 ## Log Levels

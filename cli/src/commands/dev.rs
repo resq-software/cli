@@ -39,6 +39,8 @@ pub enum DevCommands {
     SyncEnv(SyncEnvArgs),
     /// Upgrade dependencies across all monorepo silos
     Upgrade(UpgradeArgs),
+    /// Install git hooks from .git-hooks directory
+    InstallHooks,
 }
 
 /// Arguments for the 'kill-ports' command.
@@ -87,7 +89,60 @@ pub fn run(args: DevArgs) -> Result<()> {
         DevCommands::KillPorts(args) => run_kill_ports(args),
         DevCommands::SyncEnv(args) => run_sync_env(args),
         DevCommands::Upgrade(args) => run_upgrade(args),
+        DevCommands::InstallHooks => run_install_hooks(),
     }
+}
+
+fn run_install_hooks() -> Result<()> {
+    let root = crate::utils::find_project_root();
+    let hooks_dir = root.join(".git-hooks");
+
+    if !hooks_dir.exists() {
+        anyhow::bail!(
+            "Hooks directory '.git-hooks' not found in project root: {}",
+            root.display()
+        );
+    }
+
+    println!("🔧 Setting up ResQ git hooks...");
+
+    // Configure git to use custom hooks directory
+    let status = Command::new("git")
+        .args(["config", "core.hooksPath", ".git-hooks"])
+        .current_dir(&root)
+        .status()
+        .context("Failed to run git config")?;
+
+    if !status.success() {
+        anyhow::bail!("Failed to set git core.hooksPath");
+    }
+
+    // Make hooks executable
+    let mut count = 0;
+    for entry in std::fs::read_dir(&hooks_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            let name = path.file_name().unwrap().to_string_lossy();
+            if name == "README.md" {
+                continue;
+            }
+
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                let mut perms = std::fs::metadata(&path)?.permissions();
+                perms.set_mode(0o755);
+                std::fs::set_permissions(&path, perms)?;
+            }
+
+            println!("  • {name}");
+            count += 1;
+        }
+    }
+
+    println!("\n✅ Successfully installed {count} git hooks!");
+    Ok(())
 }
 
 fn run_upgrade(args: UpgradeArgs) -> Result<()> {

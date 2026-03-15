@@ -19,8 +19,8 @@ Terminal binary and machine-code analyzer for ResQ. Used to inspect compiled art
 
 ## Commands
 ```bash
-cargo build -p bin-explorer
-cargo test -p bin-explorer
+cargo build -p resq-bin-explorer
+cargo test -p resq-bin-explorer
 ```
 
 ## Rules

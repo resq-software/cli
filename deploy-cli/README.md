@@ -14,34 +14,35 @@
   limitations under the License.
 -->
 
-# deploy-cli — Deployment Manager
+# resq-deploy — Deployment Manager
 
 Ratatui terminal UI for managing Docker Compose and Kubernetes deployments across dev, staging, and production environments. Provides an interactive 3-panel interface as well as a non-interactive `--action` flag for scripting.
 
 ## Build
 
 ```bash
-cargo build --release --manifest-path tools/Cargo.toml -p resq-deploy-cli
+# Build from workspace root
+cargo build --release -p resq-deploy-cli
 ```
 
-Binary: `tools/deploy-cli/target/release/deploy-cli`
+Binary: `target/release/resq-deploy`
 
 ## Usage
 
 ```bash
 # Interactive TUI (default: dev environment, Docker Compose)
-deploy-cli
+resq-deploy
 
 # Target a specific environment
-deploy-cli --env staging
+resq-deploy --env staging
 
 # Kubernetes mode
-deploy-cli --k8s --env prod
+resq-deploy --k8s --env prod
 
 # Non-interactive / CI: run a single action
-deploy-cli --env dev --action up
-deploy-cli --env prod --k8s --action deploy
-deploy-cli --env dev --service infrastructure-api --action restart
+resq-deploy --env dev --action up
+resq-deploy --env prod --k8s --action deploy
+resq-deploy --env dev --service infrastructure-api --action restart
 ```
 
 ## TUI Layout

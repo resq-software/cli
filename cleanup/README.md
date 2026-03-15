@@ -14,29 +14,27 @@
   limitations under the License.
 -->
 
-# cleanup — Build Artifact Cleaner
+# resq-clean — Build Artifact Cleaner
 
-Removes gitignored build artifacts and generated files from the monorepo while preserving negated patterns and `.env` files. Uses the `ignore` crate for full `.gitignore` semantics including negation (`!pattern`).
+Removes gitignored build artifacts and generated files from the monorepo while preserving negated patterns and `.env` files. Uses the `ignore` crate for full `.gitignore` semantics and provides an interactive TUI for visual cleanup.
 
 ## Build
 
 ```bash
-cargo build --release --manifest-path tools/Cargo.toml -p resq-cleanup
+# Build from workspace root
+cargo build --release -p resq-cleanup
 ```
 
-Binary: `tools/cleanup/target/release/cleanup`
+Binary: `target/release/resq-clean`
 
 ## Usage
 
 ```bash
-# Always preview first
-cleanup --dry-run
+# Interactive TUI (default)
+resq-clean
 
-# Run cleanup with per-file output
-cleanup --verbose
-
-# Silent run (no output except errors)
-cleanup
+# Preview what would be deleted without removing anything
+resq-clean --dry-run
 ```
 
 ## How It Works

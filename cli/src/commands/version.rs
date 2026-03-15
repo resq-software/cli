@@ -201,17 +201,39 @@ fn get_repo_root() -> Result<PathBuf> {
 }
 
 fn get_current_version(root: &Path) -> Result<String> {
-    let pkg_json = fs::read_to_string(root.join("package.json"))?;
-    let v: serde_json::Value = serde_json::from_str(&pkg_json)?;
-    Ok(v["version"]
-        .as_str()
-        .context("No version in package.json")?
-        .to_string())
+    // Try Cargo.toml first in this workspace
+    let cargo_path = root.join("Cargo.toml");
+    if cargo_path.exists() {
+        let content = fs::read_to_string(&cargo_path)?;
+        for line in content.lines() {
+            if line.trim().starts_with("version = \"") {
+                let v = line
+                    .split('"')
+                    .nth(1)
+                    .context("Invalid version line in Cargo.toml")?;
+                return Ok(v.to_string());
+            }
+        }
+    }
+
+    // Fallback to package.json
+    let pkg_path = root.join("package.json");
+    if pkg_path.exists() {
+        let pkg_json = fs::read_to_string(pkg_path)?;
+        let v: serde_json::Value = serde_json::from_str(&pkg_json)?;
+        if let Some(version) = v["version"].as_str() {
+            return Ok(version.to_string());
+        }
+    }
+
+    Err(anyhow::anyhow!(
+        "Could not find version in Cargo.toml or package.json"
+    ))
 }
 
 fn bump_version(current: &str, bump: &str) -> Result<String> {
     let parts: Vec<&str> = current.split('.').collect();
-    if parts.len() != 3 {
+    if parts.len() < 3 {
         return Err(anyhow::anyhow!("Invalid version format: {current}"));
     }
 
@@ -240,30 +262,36 @@ fn bump_version(current: &str, bump: &str) -> Result<String> {
 fn update_manifests(root: &Path, old_version: &str, new_version: &str) -> Result<()> {
     // 1. package.json
     let pkg_path = root.join("package.json");
-    let pkg_content = fs::read_to_string(&pkg_path)?;
-    let new_pkg = pkg_content.replace(
-        &format!("\"version\": \"{old_version}\""),
-        &format!("\"version\": \"{new_version}\""),
-    );
-    fs::write(pkg_path, new_pkg)?;
+    if pkg_path.exists() {
+        let pkg_content = fs::read_to_string(&pkg_path)?;
+        let new_pkg = pkg_content.replace(
+            &format!("\"version\": \"{old_version}\""),
+            &format!("\"version\": \"{new_version}\""),
+        );
+        fs::write(pkg_path, new_pkg)?;
+    }
 
     // 2. pyproject.toml
     let py_path = root.join("pyproject.toml");
-    let py_content = fs::read_to_string(&py_path)?;
-    let new_py = py_content.replace(
-        &format!("version = \"{old_version}\""),
-        &format!("version = \"{new_version}\""),
-    );
-    fs::write(py_path, new_py)?;
+    if py_path.exists() {
+        let py_content = fs::read_to_string(&py_path)?;
+        let new_py = py_content.replace(
+            &format!("version = \"{old_version}\""),
+            &format!("version = \"{new_version}\""),
+        );
+        fs::write(py_path, new_py)?;
+    }
 
     // 3. Cargo.toml (Workspace)
     let cargo_path = root.join("Cargo.toml");
-    let cargo_content = fs::read_to_string(&cargo_path)?;
-    let new_cargo = cargo_content.replace(
-        &format!("version = \"{old_version}\""),
-        &format!("version = \"{new_version}\""),
-    );
-    fs::write(cargo_path, new_cargo)?;
+    if cargo_path.exists() {
+        let cargo_content = fs::read_to_string(&cargo_path)?;
+        let new_cargo = cargo_content.replace(
+            &format!("version = \"{old_version}\""),
+            &format!("version = \"{new_version}\""),
+        );
+        fs::write(cargo_path, new_cargo)?;
+    }
 
     // 4. Directory.Build.props
     let props_path = root.join("Directory.Build.props");
