@@ -1,3 +1,19 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.1.4](https://github.com/resq-software/cli/compare/resq-bin-explorer-v0.1.3...resq-bin-explorer-v0.1.4) - 2026-03-17
+
+### Other
+
+- optimize rust workspace configuration
+- add rust workspace optimization design
+- remove gitleaks binary and update configuration files
 <!--
   Copyright 2026 ResQ
 
@@ -14,14 +30,6 @@
   limitations under the License.
 -->
 
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [Unreleased]
 
 ## [0.1.3](https://github.com/resq-software/cli/compare/resq-bin-explorer-v0.1.2...resq-bin-explorer-v0.1.3) - 2026-03-15
 
