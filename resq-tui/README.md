@@ -32,7 +32,7 @@ Add to `Cargo.toml`:
 
 ```toml
 [dependencies]
-resq-tui = { path = "../resq-tui" }
+resq-tui = { workspace = true }
 ```
 
 ### Rendering a Standard Header
