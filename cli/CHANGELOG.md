@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3](https://github.com/resq-software/crates/compare/resq-cli-v0.2.2...resq-cli-v0.2.3) - 2026-03-27
+
+### Other
+
+- update repo references after rename cli → crates
+
 ## [0.2.2](https://github.com/resq-software/crates/compare/resq-cli-v0.2.1...resq-cli-v0.2.2) - 2026-03-17
 
 ### Other

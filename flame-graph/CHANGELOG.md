@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/resq-software/crates/compare/resq-flamegraph-v0.1.5...resq-flamegraph-v0.1.6) - 2026-03-27
+
+### Other
+
+- update repo references after rename cli → crates
+
 ## [0.1.4](https://github.com/resq-software/crates/compare/resq-flamegraph-v0.1.3...resq-flamegraph-v0.1.4) - 2026-03-17
 
 ### Other
