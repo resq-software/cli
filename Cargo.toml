@@ -23,6 +23,7 @@ members = [
     "flame-graph",
     "bin-explorer",
     "cleanup",
+    "resq-dsa",
 ]
 resolver = "2"
 

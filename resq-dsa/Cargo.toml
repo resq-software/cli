@@ -1,0 +1,19 @@
+[package]
+name = "resq-dsa"
+version = "0.1.0"
+edition = "2021"
+license.workspace = true
+repository.workspace = true
+description = "Production-grade data structures and algorithms — zero external dependencies"
+keywords = ["dsa", "bloom-filter", "graph", "trie", "algorithms"]
+categories = ["algorithms", "data-structures"]
+publish = true
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+
+[lints]
+workspace = true
