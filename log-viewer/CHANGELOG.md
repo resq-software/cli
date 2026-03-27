@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.5](https://github.com/resq-software/cli/compare/resq-log-viewer-v0.1.4...resq-log-viewer-v0.1.5) - 2026-03-17
+## [0.1.5](https://github.com/resq-software/crates/compare/resq-log-viewer-v0.1.4...resq-log-viewer-v0.1.5) - 2026-03-17
 
 ### Other
 
@@ -15,14 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - keep docs cleanup scoped
 - remove tracked linear planning docs
 
-## [0.1.4](https://github.com/resq-software/cli/compare/resq-log-viewer-v0.1.3...resq-log-viewer-v0.1.4) - 2026-03-17
+## [0.1.4](https://github.com/resq-software/crates/compare/resq-log-viewer-v0.1.3...resq-log-viewer-v0.1.4) - 2026-03-17
 
 ### Other
 
 - optimize rust workspace configuration
 - remove gitleaks binary and update configuration files
 
-## [0.1.2](https://github.com/resq-software/cli/compare/resq-log-viewer-v0.1.1...resq-log-viewer-v0.1.2) - 2026-03-15
+## [0.1.2](https://github.com/resq-software/crates/compare/resq-log-viewer-v0.1.1...resq-log-viewer-v0.1.2) - 2026-03-15
+## [0.1.2](https://github.com/resq-software/crates/compare/resq-log-viewer-v0.1.1...resq-log-viewer-v0.1.2) - 2026-03-15
 
 ### Other
 

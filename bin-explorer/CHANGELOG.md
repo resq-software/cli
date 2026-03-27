@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.4](https://github.com/resq-software/cli/compare/resq-bin-explorer-v0.1.3...resq-bin-explorer-v0.1.4) - 2026-03-17
+## [0.1.4](https://github.com/resq-software/crates/compare/resq-bin-explorer-v0.1.3...resq-bin-explorer-v0.1.4) - 2026-03-17
 
 ### Other
 
@@ -31,13 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
-## [0.1.3](https://github.com/resq-software/cli/compare/resq-bin-explorer-v0.1.2...resq-bin-explorer-v0.1.3) - 2026-03-15
+## [0.1.3](https://github.com/resq-software/crates/compare/resq-bin-explorer-v0.1.2...resq-bin-explorer-v0.1.3) - 2026-03-15
+## [0.1.3](https://github.com/resq-software/crates/compare/resq-bin-explorer-v0.1.2...resq-bin-explorer-v0.1.3) - 2026-03-15
 
 ### Other
 
 - Merge pull request #9 from resq-software/release-plz-2026-03-15T05-20-00Z
 
-## [0.1.2](https://github.com/resq-software/cli/compare/resq-bin-explorer-v0.1.1...resq-bin-explorer-v0.1.2) - 2026-03-15
+## [0.1.2](https://github.com/resq-software/crates/compare/resq-bin-explorer-v0.1.1...resq-bin-explorer-v0.1.2) - 2026-03-15
 
 ### Other
 
@@ -59,7 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
-## [0.1.1](https://github.com/resq-software/cli/compare/resq-bin-explorer-v0.1.0...resq-bin-explorer-v0.1.1) - 2026-03-13
+## [0.1.1](https://github.com/resq-software/crates/compare/resq-bin-explorer-v0.1.0...resq-bin-explorer-v0.1.1) - 2026-03-13
 
 ### Added
 
@@ -75,7 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - apply rustfmt to all workspace crates
 - copy 7 tools from monorepo
 
-## [0.1.0](https://github.com/resq-software/cli/releases/tag/resq-bin-explorer-v0.1.0) - 2026-03-13
+## [0.1.0](https://github.com/resq-software/crates/releases/tag/resq-bin-explorer-v0.1.0) - 2026-03-13
 
 ### Added
 

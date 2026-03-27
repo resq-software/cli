@@ -16,7 +16,7 @@
 
 # resq CLI Documentation
 
-![CI](https://img.shields.io/github/actions/workflow/status/resq-software/cli/ci.yml?branch=main&label=ci&style=flat-square)
+![CI](https://img.shields.io/github/actions/workflow/status/resq-software/crates/ci.yml?branch=main&label=ci&style=flat-square)
 ![crates.io](https://img.shields.io/crates/v/resq-cli?style=flat-square)
 ![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square)
 
@@ -84,7 +84,7 @@ cargo install resq-cli
 
 ### From Source
 ```sh
-git clone https://github.com/resq-software/cli.git
+git clone https://github.com/resq-software/crates.git
 cd cli
 cargo build --release --workspace
 ```

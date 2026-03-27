@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.3](https://github.com/resq-software/cli/compare/resq-tui-v0.1.2...resq-tui-v0.1.3) - 2026-03-17
+## [0.1.3](https://github.com/resq-software/crates/compare/resq-tui-v0.1.2...resq-tui-v0.1.3) - 2026-03-17
 
 ### Other
 
@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - optimize rust workspace configuration
 - remove gitleaks binary and update configuration files
 
-## [0.1.2](https://github.com/resq-software/cli/compare/resq-tui-v0.1.1...resq-tui-v0.1.2) - 2026-03-15
+## [0.1.2](https://github.com/resq-software/crates/compare/resq-tui-v0.1.1...resq-tui-v0.1.2) - 2026-03-15
+## [0.1.2](https://github.com/resq-software/crates/compare/resq-tui-v0.1.1...resq-tui-v0.1.2) - 2026-03-15
 
 ### Fixed
 
@@ -38,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -->
 
 
-## [0.1.1](https://github.com/resq-software/cli/compare/resq-tui-v0.1.0...resq-tui-v0.1.1) - 2026-03-15
+## [0.1.1](https://github.com/resq-software/crates/compare/resq-tui-v0.1.0...resq-tui-v0.1.1) - 2026-03-15
 
 ### Other
 
