@@ -1,29 +1,18 @@
-<!--
-  Copyright 2026 ResQ
-
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
-
-      http://www.apache.org/licenses/LICENSE-2.0
-
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
--->
-
 # ResQ Crates
 
-[![CI](https://img.shields.io/github/actions/workflow/status/resq-software/crates/ci.yml?branch=main&label=ci&style=flat-square)](https://github.com/resq-software/crates/actions)
-[![crates.io](https://img.shields.io/crates/v/resq-dsa?style=flat-square)](https://crates.io/crates/resq-dsa)
-[![crates.io](https://img.shields.io/crates/v/resq-cli?style=flat-square)](https://crates.io/crates/resq-cli)
-[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg?style=flat-square)](./LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/resq-software/crates/ci.yml?branch=master&label=ci&style=flat-square)](https://github.com/resq-software/crates/actions)
+[![resq-dsa](https://img.shields.io/crates/v/resq-dsa?style=flat-square&label=resq-dsa)](https://crates.io/crates/resq-dsa)
+[![resq-tui](https://img.shields.io/crates/v/resq-tui?style=flat-square&label=resq-tui)](https://crates.io/crates/resq-tui)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
 
-A Cargo workspace and crate registry for all ResQ Rust packages published to [crates.io](https://crates.io). Contains production-grade libraries and a suite of CLI/TUI developer tools for the ResQ autonomous drone platform.
+> A comprehensive Rust CLI/TUI toolset and DSA library for the ResQ autonomous drone platform.
 
----
+## Packages
+
+| Crate | Install | Version |
+|-------|---------|---------|
+| `resq-dsa` | `cargo add resq-dsa` | [![crates.io](https://img.shields.io/crates/v/resq-dsa?style=flat-square)](https://crates.io/crates/resq-dsa) |
+| `resq-tui` | `cargo install resq-tui` | [![crates.io](https://img.shields.io/crates/v/resq-tui?style=flat-square)](https://crates.io/crates/resq-tui) |
 
 ## Packages
 
