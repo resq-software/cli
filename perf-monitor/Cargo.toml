@@ -44,7 +44,7 @@ tokio = { workspace = true }
 reqwest = { workspace = true }
 
 # Binary analysis and process info (Memory Profiler)
-object = "0.38"
+object = "0.39"
 procfs = "0.18"
 addr2line = "0.26"
 
