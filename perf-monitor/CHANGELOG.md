@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9](https://github.com/resq-software/crates/compare/resq-perf-monitor-v0.1.8...resq-perf-monitor-v0.1.9) - 2026-04-02
+
+### Other
+
+- release v0.1.9 ([#25](https://github.com/resq-software/crates/pull/25))
+- release v0.1.8 ([#24](https://github.com/resq-software/crates/pull/24))
+
 ## [0.1.9](https://github.com/resq-software/crates/compare/resq-perf-monitor-v0.1.8...resq-perf-monitor-v0.1.9) - 2026-04-01
 
 ### Other
