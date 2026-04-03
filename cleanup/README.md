@@ -22,7 +22,7 @@ Removes gitignored build artifacts and generated files from the monorepo while p
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-cleanup
+cargo build --release -p resq-clean
 ```
 
 Binary: `target/release/resq-clean`

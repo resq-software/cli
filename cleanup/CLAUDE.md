@@ -1,4 +1,4 @@
-# resq-cleanup — Agent Guide
+# resq-clean — Agent Guide
 
 ## Mission
 Visual workspace cleaner for ResQ. Analyzes build artifacts and gitignored files to help developers reclaim disk space and maintain a clean repository.
@@ -17,8 +17,8 @@ Visual workspace cleaner for ResQ. Analyzes build artifacts and gitignored files
 
 ## Commands
 ```bash
-cargo build -p resq-cleanup
-cargo test -p resq-cleanup
+cargo build -p resq-clean
+cargo test -p resq-clean
 ```
 
 ## Rules
@@ -32,7 +32,7 @@ cargo test -p resq-cleanup
 - Ensure the user has visual confirmation (TUI) or explicit intent (`--dry-run` vs final) before removing data.
 
 ## Workflow
-1. Run `cargo build -p resq-cleanup` before finalizing code changes.
+1. Run `cargo build -p resq-clean` before finalizing code changes.
 2. Verify scanning logic against various `.gitignore` patterns.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, artifact detection improvements, and test output.

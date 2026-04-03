@@ -4,6 +4,7 @@
 Developer tooling for the ResQ platform. This monorepo contains a suite of CLI and TUI tools for auditing, deployment, performance monitoring, and repository maintenance.
 
 ## Workspace Layout
+- `resq-dsa/` — Data structures and algorithms library (zero dependencies, `no_std`-compatible).
 - `cli/` — The main `resq` CLI tool (entry point).
 - `resq-tui/` — Shared component library for all TUI tools.
 - `bin-explorer/` — Machine code and binary analyzer (`resq-bin`).

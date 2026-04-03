@@ -1,4 +1,4 @@
-# resq-log-viewer — Agent Guide
+# resq-logs — Agent Guide
 
 ## Mission
 Multi-source log aggregator for ResQ. Streams and aggregates logs from Docker Compose containers or local files with filtering and search capabilities.
@@ -19,8 +19,8 @@ Multi-source log aggregator for ResQ. Streams and aggregates logs from Docker Co
 
 ## Commands
 ```bash
-cargo build -p resq-log-viewer
-cargo test -p resq-log-viewer
+cargo build -p resq-logs
+cargo test -p resq-logs
 ```
 
 ## Rules
@@ -33,8 +33,8 @@ cargo test -p resq-log-viewer
 - Handle Docker and file rotation gracefully to avoid stream disconnection.
 
 ## Workflow
-1. Run `cargo build -p resq-log-viewer` before finalizing code changes.
-2. Run `cargo test -p resq-log-viewer` to verify log parsing logic.
+1. Run `cargo build -p resq-logs` before finalizing code changes.
+2. Run `cargo test -p resq-logs` to verify log parsing logic.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, parser improvements (if any), and test results.
 

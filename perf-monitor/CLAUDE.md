@@ -1,4 +1,4 @@
-# resq-perf-monitor — Agent Guide
+# resq-perf — Agent Guide
 
 ## Mission
 Real-time performance diagnostic dashboard for ResQ services. Polls service `/status` endpoints to display CPU, memory, and request latency metrics in a TUI.
@@ -18,8 +18,8 @@ Real-time performance diagnostic dashboard for ResQ services. Polls service `/st
 
 ## Commands
 ```bash
-cargo build -p resq-perf-monitor
-cargo test -p resq-perf-monitor
+cargo build -p resq-perf
+cargo test -p resq-perf
 ```
 
 ## Rules
@@ -33,7 +33,7 @@ cargo test -p resq-perf-monitor
 - Correctly handle connection errors and display them as warning states in the UI.
 
 ## Workflow
-1. Run `cargo build -p resq-perf-monitor` before finalizing code changes.
+1. Run `cargo build -p resq-perf` before finalizing code changes.
 2. Verify metrics parsing against the `coordination-hce` `/status` endpoint schema.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, metric calculation improvements, and test output.

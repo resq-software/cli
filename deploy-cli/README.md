@@ -22,7 +22,7 @@ Ratatui terminal UI for managing Docker Compose and Kubernetes deployments acros
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-deploy-cli
+cargo build --release -p resq-deploy
 ```
 
 Binary: `target/release/resq-deploy`

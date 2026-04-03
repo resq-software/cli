@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [package]
-name = "resq-flamegraph"
+name = "resq-flame"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

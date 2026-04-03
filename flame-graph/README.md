@@ -35,7 +35,7 @@ pip install py-spy
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-flamegraph
+cargo build --release -p resq-flame
 ```
 
 Binary: `target/release/resq-flame`

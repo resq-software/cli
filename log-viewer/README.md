@@ -22,7 +22,7 @@ Ratatui terminal UI that streams and aggregates logs from Docker Compose contain
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-log-viewer
+cargo build --release -p resq-logs
 ```
 
 Binary: `target/release/resq-logs`

@@ -22,7 +22,7 @@ Robust interactive binary analyzer for ResQ services. Provides deep visibility i
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-bin-explorer
+cargo build --release -p resq-bin
 ```
 
 Binary: `target/release/resq-bin`

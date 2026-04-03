@@ -2,17 +2,11 @@
 
 [![CI](https://img.shields.io/github/actions/workflow/status/resq-software/crates/ci.yml?branch=master&label=ci&style=flat-square)](https://github.com/resq-software/crates/actions)
 [![resq-dsa](https://img.shields.io/crates/v/resq-dsa?style=flat-square&label=resq-dsa)](https://crates.io/crates/resq-dsa)
+[![resq-cli](https://img.shields.io/crates/v/resq-cli?style=flat-square&label=resq-cli)](https://crates.io/crates/resq-cli)
 [![resq-tui](https://img.shields.io/crates/v/resq-tui?style=flat-square&label=resq-tui)](https://crates.io/crates/resq-tui)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](LICENSE)
 
 > A comprehensive Rust CLI/TUI toolset and DSA library for the ResQ autonomous drone platform.
-
-## Packages
-
-| Crate | Install | Version |
-|-------|---------|---------|
-| `resq-dsa` | `cargo add resq-dsa` | [![crates.io](https://img.shields.io/crates/v/resq-dsa?style=flat-square)](https://crates.io/crates/resq-dsa) |
-| `resq-tui` | `cargo install resq-tui` | [![crates.io](https://img.shields.io/crates/v/resq-tui?style=flat-square)](https://crates.io/crates/resq-tui) |
 
 ## Packages
 
@@ -26,7 +20,7 @@
 | [`resq-logs`](log-viewer/) | Log aggregator and stream viewer | [![crates.io](https://img.shields.io/crates/v/resq-logs?style=flat-square)](https://crates.io/crates/resq-logs) |
 | [`resq-perf`](perf-monitor/) | Performance monitoring dashboard | [![crates.io](https://img.shields.io/crates/v/resq-perf?style=flat-square)](https://crates.io/crates/resq-perf) |
 | [`resq-flame`](flame-graph/) | CPU profiler and flame graph generator | [![crates.io](https://img.shields.io/crates/v/resq-flame?style=flat-square)](https://crates.io/crates/resq-flame) |
-| [`bin-explorer`](bin-explorer/) | Machine code and binary analyzer | [![crates.io](https://img.shields.io/crates/v/bin-explorer?style=flat-square)](https://crates.io/crates/bin-explorer) |
+| [`resq-bin`](bin-explorer/) | Machine code and binary analyzer | [![crates.io](https://img.shields.io/crates/v/resq-bin?style=flat-square)](https://crates.io/crates/resq-bin) |
 | [`resq-clean`](cleanup/) | Interactive workspace cleaner | [![crates.io](https://img.shields.io/crates/v/resq-clean?style=flat-square)](https://crates.io/crates/resq-clean) |
 
 ---

@@ -22,7 +22,7 @@ Ratatui terminal UI that polls all ResQ service health endpoints and displays li
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-health-checker
+cargo build --release -p resq-health
 ```
 
 Binary: `target/release/resq-health`

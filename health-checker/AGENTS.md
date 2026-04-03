@@ -1,4 +1,4 @@
-# resq-health-checker — Agent Guide
+# resq-health — Agent Guide
 
 ## Mission
 Service health diagnostic dashboard for ResQ. Polls all service health endpoints and displays status/latency in a TUI or a single-check CLI mode.
@@ -19,8 +19,8 @@ Service health diagnostic dashboard for ResQ. Polls all service health endpoints
 
 ## Commands
 ```bash
-cargo build -p resq-health-checker
-cargo test -p resq-health-checker
+cargo build -p resq-health
+cargo test -p resq-health
 ```
 
 ## Rules
@@ -34,7 +34,7 @@ cargo test -p resq-health-checker
 - Time out all requests to prevent the TUI from hanging.
 
 ## Workflow
-1. Run `cargo build -p resq-health-checker` before finalizing code changes.
+1. Run `cargo build -p resq-health` before finalizing code changes.
 2. Verify polling logic against mock endpoints if possible.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, new services added, and test results.

@@ -22,7 +22,7 @@ Ratatui terminal UI showing live CPU usage, memory consumption, and request metr
 
 ```bash
 # Build from workspace root
-cargo build --release -p resq-perf-monitor
+cargo build --release -p resq-perf
 ```
 
 Binary: `target/release/resq-perf`

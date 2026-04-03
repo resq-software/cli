@@ -13,7 +13,7 @@
 # limitations under the License.
 
 [package]
-name = "resq-perf-monitor"
+name = "resq-perf"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

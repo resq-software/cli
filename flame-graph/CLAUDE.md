@@ -1,4 +1,4 @@
-# resq-flamegraph — Agent Guide
+# resq-flame — Agent Guide
 
 ## Mission
 SVG CPU flame graph profiler for ResQ services. Provides an interactive TUI for selecting profiling targets and subcommands to profile specific environments, piping the output through `inferno-flamegraph`.
@@ -17,8 +17,8 @@ SVG CPU flame graph profiler for ResQ services. Provides an interactive TUI for 
 
 ## Commands
 ```bash
-cargo build -p resq-flamegraph
-cargo test -p resq-flamegraph
+cargo build -p resq-flame
+cargo test -p resq-flame
 ```
 
 ## Rules
@@ -31,7 +31,7 @@ cargo test -p resq-flamegraph
 - Be cautious when profiling production environments — use reasonable durations.
 
 ## Workflow
-1. Run `cargo build -p resq-flamegraph` before finalizing code changes.
+1. Run `cargo build -p resq-flame` before finalizing code changes.
 2. Verify SVG generation with a sample folded stack file.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, new profiling targets (if any), and test results.
