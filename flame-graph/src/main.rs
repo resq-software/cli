@@ -26,21 +26,15 @@ use std::fmt;
 use std::fs;
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::PathBuf;
-use std::time::Duration;
-
 use clap::{Parser, Subcommand};
 use inferno::flamegraph::{self, Options as FlamegraphOptions};
 
-use crossterm::{
-    event::{self, Event, KeyCode, KeyEventKind},
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen},
-    ExecutableCommand,
-};
-use ratatui::{
+use resq_tui::crossterm::event::{self, KeyCode, KeyEventKind};
+use resq_tui::ratatui::{
     prelude::*,
     widgets::{Block, BorderType, Borders, List, ListItem, ListState, Paragraph},
 };
-use resq_tui::{self as tui, Theme};
+use resq_tui::{self as tui, terminal, terminal::TuiApp, Theme};
 
 // ─── CLI ───────────────────────────────────────────────────────────────────────
 
@@ -122,10 +116,39 @@ impl App {
     }
 }
 
+// ─── TuiApp impl ─────────────────────────────────────────────────────────────
+
+impl TuiApp for App {
+    fn draw(&mut self, frame: &mut Frame) {
+        draw_ui(frame, self);
+    }
+
+    fn handle_key(&mut self, key: event::KeyEvent) -> anyhow::Result<bool> {
+        if key.kind != KeyEventKind::Press {
+            return Ok(true);
+        }
+        match key.code {
+            KeyCode::Char('q') | KeyCode::Esc => Ok(false),
+            KeyCode::Down | KeyCode::Char('j') => {
+                let i = self.list_state.selected().unwrap_or(0);
+                self.list_state
+                    .select(Some((i + 1).min(self.services.len() - 1)));
+                Ok(true)
+            }
+            KeyCode::Up | KeyCode::Char('k') => {
+                let i = self.list_state.selected().unwrap_or(0);
+                self.list_state.select(Some(i.saturating_sub(1)));
+                Ok(true)
+            }
+            _ => Ok(true),
+        }
+    }
+}
+
 // ─── Main ──────────────────────────────────────────────────────────────────────
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     if cli.command.is_some() {
@@ -134,37 +157,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let mut app = App::new(cli.output);
-    enable_raw_mode()?;
-    std::io::stdout().execute(EnterAlternateScreen)?;
-    let mut terminal = ratatui::init();
-
-    loop {
-        terminal.draw(|f| draw_ui(f, &mut app))?;
-        if event::poll(Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
-                if key.kind != KeyEventKind::Press {
-                    continue;
-                }
-                match key.code {
-                    KeyCode::Char('q') | KeyCode::Esc => break,
-                    KeyCode::Down | KeyCode::Char('j') => {
-                        let i = app.list_state.selected().unwrap_or(0);
-                        app.list_state
-                            .select(Some((i + 1).min(app.services.len() - 1)));
-                    }
-                    KeyCode::Up | KeyCode::Char('k') => {
-                        let i = app.list_state.selected().unwrap_or(0);
-                        app.list_state.select(Some(i.saturating_sub(1)));
-                    }
-                    _ => {}
-                }
-            }
-        }
-    }
-
-    ratatui::restore();
-    disable_raw_mode()?;
-    Ok(())
+    let mut term = terminal::init()?;
+    let result = terminal::run_loop(&mut term, 100, &mut app);
+    terminal::restore();
+    result
 }
 
 fn draw_ui(f: &mut Frame, app: &mut App) {
@@ -187,7 +183,7 @@ fn draw_ui(f: &mut Frame, app: &mut App) {
     );
 
     let body = Layout::default()
-        .direction(ratatui::layout::Direction::Horizontal)
+        .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(40), Constraint::Percentage(60)])
         .split(chunks[1]);
 
