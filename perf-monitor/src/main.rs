@@ -43,9 +43,9 @@ use std::{
 use anyhow::{Context, Result};
 use clap::Parser;
 use resq_tui::{format_bytes, format_duration};
-use resq_tui::terminal::{self, TuiApp};
+use resq_tui::terminal;
 
-use resq_tui::crossterm::event::{self, KeyCode, KeyEventKind};
+use resq_tui::crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use resq_tui::ratatui::{
     layout::{Alignment, Constraint, Layout, Rect},
     style::{Color, Modifier, Style},
@@ -833,15 +833,8 @@ struct CliArgs {
     token: Option<String>,
 }
 
-impl TuiApp for App {
-    fn draw(&mut self, frame: &mut Frame) {
-        // Tick-based update: poll the service when the refresh interval has elapsed.
-        if self.last_fetch.elapsed() >= self.tick_rate() {
-            self.update();
-        }
-        draw(frame, self);
-    }
-
+impl App {
+    /// Handle a key event. Returns `false` to signal exit.
     fn handle_key(&mut self, key: event::KeyEvent) -> Result<bool> {
         if key.kind == KeyEventKind::Press {
             match key.code {
@@ -865,10 +858,38 @@ fn main() -> Result<()> {
     let mut terminal = terminal::init()?;
     let mut app = App::new(args.url, args.token, refresh_ms)?;
 
-    // Initial fetch
+    // Initial fetch before entering the loop
     app.update();
 
-    let result = terminal::run_loop(&mut terminal, 50, &mut app);
+    // Manual event loop: keeps blocking I/O (`update`) out of the draw call.
+    let poll_timeout = Duration::from_millis(50);
+    let result: Result<()> = (|| {
+        loop {
+            // 1. Tick-based network poll — only when the refresh interval has elapsed.
+            if app.last_fetch.elapsed() >= app.tick_rate() {
+                app.update();
+            }
+
+            // 2. Render the current state (pure, no I/O).
+            terminal.draw(|f| draw(f, &app))?;
+
+            // 3. Handle keyboard input.
+            if event::poll(poll_timeout)? {
+                if let Event::Key(key) = event::read()? {
+                    if key.modifiers.contains(KeyModifiers::CONTROL)
+                        && key.code == KeyCode::Char('c')
+                    {
+                        break;
+                    }
+                    if !app.handle_key(key)? {
+                        break;
+                    }
+                }
+            }
+        }
+        Ok(())
+    })();
+
     terminal::restore();
     result
 }

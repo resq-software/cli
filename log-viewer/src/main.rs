@@ -40,6 +40,7 @@ use tokio::sync::mpsc;
 use parser::{LogEntry, LogLevel};
 
 const MAX_LOG_LINES: usize = 10_000;
+const MAX_INGEST_PER_FRAME: usize = 256;
 
 /// Aggregated log viewer for `ResQ` services.
 #[derive(Parser)]
@@ -153,9 +154,12 @@ impl App {
 
 impl TuiApp for App {
     fn draw(&mut self, frame: &mut resq_tui::ratatui::Frame) {
-        // Drain incoming log entries before each render.
-        while let Ok(entry) = self.rx.try_recv() {
-            self.push_entry(entry);
+        // Drain incoming log entries before each render (capped to avoid UI stalls).
+        for _ in 0..MAX_INGEST_PER_FRAME {
+            match self.rx.try_recv() {
+                Ok(entry) => self.push_entry(entry),
+                Err(_) => break,
+            }
         }
         draw_ui(frame, self);
     }

@@ -56,6 +56,9 @@ pub trait TuiApp {
     fn draw(&mut self, frame: &mut ratatui::Frame);
 
     /// Handle a key event. Return `false` to exit the loop.
+    ///
+    /// # Errors
+    /// Returns any application-specific error that should terminate the TUI loop.
     fn handle_key(&mut self, key: event::KeyEvent) -> anyhow::Result<bool>;
 }
 

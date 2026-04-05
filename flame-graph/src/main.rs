@@ -74,6 +74,8 @@ struct App {
     list_state: ListState,
     theme: Theme,
     output_path: PathBuf,
+    /// Set when the user presses Enter; holds the index of the selected target.
+    selected_target: Option<usize>,
 }
 
 struct ProfilingTarget {
@@ -112,6 +114,7 @@ impl App {
             list_state,
             theme: Theme::default(),
             output_path,
+            selected_target: None,
         }
     }
 }
@@ -140,6 +143,12 @@ impl TuiApp for App {
                 self.list_state.select(Some(i.saturating_sub(1)));
                 Ok(true)
             }
+            KeyCode::Enter => {
+                if let Some(i) = self.list_state.selected() {
+                    self.selected_target = Some(i);
+                }
+                Ok(false)
+            }
             _ => Ok(true),
         }
     }
@@ -156,11 +165,23 @@ async fn main() -> anyhow::Result<()> {
         return Ok(());
     }
 
-    let mut app = App::new(cli.output);
+    let mut app = App::new(cli.output.clone());
     let mut term = terminal::init()?;
     let result = terminal::run_loop(&mut term, 100, &mut app);
     terminal::restore();
-    result
+    result?;
+
+    if let Some(idx) = app.selected_target {
+        let target = &app.services[idx];
+        println!(
+            "Starting profiling for: {} (engine: {})",
+            target.name, target.cmd_type
+        );
+        println!("Output: {}", cli.output.display());
+        // TODO: dispatch to the appropriate profiling backend based on target.cmd_type
+    }
+
+    Ok(())
 }
 
 fn draw_ui(f: &mut Frame, app: &mut App) {

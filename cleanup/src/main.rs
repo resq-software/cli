@@ -172,8 +172,10 @@ impl TuiApp for App {
                 Ok(true)
             }
             KeyCode::Up | KeyCode::Char('k') => {
-                let i = self.list_state.selected().unwrap_or(0);
-                self.list_state.select(Some(i.saturating_sub(1)));
+                if !self.entries.is_empty() {
+                    let i = self.list_state.selected().unwrap_or(0);
+                    self.list_state.select(Some(i.saturating_sub(1)));
+                }
                 Ok(true)
             }
             _ => Ok(true),

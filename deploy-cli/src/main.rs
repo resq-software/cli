@@ -221,14 +221,18 @@ impl TuiApp for App {
                             } else {
                                 Some(service.as_str())
                             };
-                        let _ = k8s::run_action(&root, &env, &action, svc, tx_clone);
+                        if let Err(err) = k8s::run_action(&root, &env, &action, svc, tx_clone) {
+                            self.push_output(format!("ERROR: {err}"));
+                        }
                     } else {
                         let svc = if action == "down" {
                             None
                         } else {
                             Some(service.as_str())
                         };
-                        let _ = docker::run_action(&root, &env, &action, svc, tx_clone);
+                        if let Err(err) = docker::run_action(&root, &env, &action, svc, tx_clone) {
+                            self.push_output(format!("ERROR: {err}"));
+                        }
                     }
                 }
             }
