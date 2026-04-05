@@ -76,8 +76,7 @@ pub fn run_loop(terminal: &mut Term, poll_ms: u64, app: &mut dyn TuiApp) -> anyh
         terminal.draw(|f| app.draw(f))?;
         if event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
-                if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c')
-                {
+                if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
                     break;
                 }
                 if !app.handle_key(key)? {

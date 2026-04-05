@@ -21,13 +21,13 @@
 
 #![deny(missing_docs)]
 
+use clap::{Parser, Subcommand};
+use inferno::flamegraph::{self, Options as FlamegraphOptions};
 use std::collections::HashMap;
 use std::fmt;
 use std::fs;
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::PathBuf;
-use clap::{Parser, Subcommand};
-use inferno::flamegraph::{self, Options as FlamegraphOptions};
 
 use resq_tui::crossterm::event::{self, KeyCode, KeyEventKind};
 use resq_tui::ratatui::{

@@ -42,8 +42,8 @@ use std::{
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use resq_tui::{format_bytes, format_duration};
 use resq_tui::terminal;
+use resq_tui::{format_bytes, format_duration};
 
 use resq_tui::crossterm::event::{self, Event, KeyCode, KeyEventKind, KeyModifiers};
 use resq_tui::ratatui::{

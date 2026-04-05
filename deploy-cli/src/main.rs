@@ -215,12 +215,11 @@ impl TuiApp for App {
                         env.to_uppercase()
                     ));
                     if self.use_k8s {
-                        let svc =
-                            if ["deploy", "destroy", "status"].contains(&action.as_str()) {
-                                None
-                            } else {
-                                Some(service.as_str())
-                            };
+                        let svc = if ["deploy", "destroy", "status"].contains(&action.as_str()) {
+                            None
+                        } else {
+                            Some(service.as_str())
+                        };
                         if let Err(err) = k8s::run_action(&root, &env, &action, svc, tx_clone) {
                             self.push_output(format!("ERROR: {err}"));
                         }
@@ -435,8 +434,7 @@ fn run_non_interactive(
 ) -> anyhow::Result<()> {
     let (tx, rx) = mpsc::unbounded_channel::<String>();
     if use_k8s {
-        k8s::run_action(project_root, env, action, service, tx)
-            .map_err(|e| anyhow::anyhow!(e))?;
+        k8s::run_action(project_root, env, action, service, tx).map_err(|e| anyhow::anyhow!(e))?;
     } else {
         docker::run_action(project_root, env, action, service, tx)
             .map_err(|e| anyhow::anyhow!(e))?;
