@@ -8,11 +8,50 @@
 
 > A comprehensive Rust CLI/TUI toolset and DSA library for the ResQ autonomous drone platform.
 
+## Overview
+
+This monorepo contains 10 published Rust crates: a zero-dependency data structures library, a unified CLI entry point, a shared TUI component library, and 7 specialized developer tools. Every TUI tool shares a common look and feel via `resq-tui`, and all tools are accessible through the unified `resq` CLI.
+
+## Architecture
+
+```mermaid
+graph TB
+    subgraph Libraries
+        DSA["resq-dsa<br/>Data Structures & Algorithms<br/><i>zero deps, no_std</i>"]
+        TUI["resq-tui<br/>Shared TUI Components<br/><i>Ratatui + Crossterm</i>"]
+    end
+
+    subgraph CLI["Unified CLI"]
+        RESQ["resq-cli<br/><code>resq</code> binary"]
+    end
+
+    subgraph Tools["Developer Tools"]
+        HEALTH["resq-health<br/>Service Health Monitor"]
+        DEPLOY["resq-deploy<br/>Deployment Manager"]
+        LOGS["resq-logs<br/>Log Aggregator"]
+        PERF["resq-perf<br/>Performance Dashboard"]
+        FLAME["resq-flame<br/>CPU Profiler"]
+        BIN["resq-bin<br/>Binary Analyzer"]
+        CLEAN["resq-clean<br/>Workspace Cleaner"]
+    end
+
+    RESQ -->|"resq health"| HEALTH
+    RESQ -->|"resq deploy"| DEPLOY
+    RESQ -->|"resq logs"| LOGS
+    RESQ -->|"resq perf"| PERF
+    RESQ -->|"resq flame"| FLAME
+    RESQ -->|"resq asm"| BIN
+    RESQ -->|"resq clean"| CLEAN
+
+    TUI -.->|shared components| HEALTH & DEPLOY & LOGS & PERF & FLAME & BIN & CLEAN
+    RESQ -.->|uses| TUI
+```
+
 ## Packages
 
 | Crate | Description | crates.io |
 | :--- | :--- | :--- |
-| [`resq-dsa`](crates/resq-dsa/) | Data structures and algorithms -- zero dependencies | [![crates.io](https://img.shields.io/crates/v/resq-dsa?style=flat-square)](https://crates.io/crates/resq-dsa) |
+| [`resq-dsa`](crates/resq-dsa/) | Data structures and algorithms -- zero dependencies, `no_std` | [![crates.io](https://img.shields.io/crates/v/resq-dsa?style=flat-square)](https://crates.io/crates/resq-dsa) |
 | [`resq-cli`](crates/resq-cli/) | Unified CLI entry point (`resq` binary) | [![crates.io](https://img.shields.io/crates/v/resq-cli?style=flat-square)](https://crates.io/crates/resq-cli) |
 | [`resq-tui`](crates/resq-tui/) | Shared Ratatui component library for all TUI tools | [![crates.io](https://img.shields.io/crates/v/resq-tui?style=flat-square)](https://crates.io/crates/resq-tui) |
 | [`resq-health`](crates/resq-health/) | Service health monitoring dashboard | [![crates.io](https://img.shields.io/crates/v/resq-health?style=flat-square)](https://crates.io/crates/resq-health) |
@@ -25,154 +64,16 @@
 
 ---
 
-## resq-dsa
-
-Production-grade data structures and algorithms with **zero external dependencies**. Supports `no_std` environments with the `alloc` crate.
-
-### Installation
+## Quick Start
 
 ```sh
-cargo add resq-dsa
+cargo install resq-cli
+resq help
 ```
 
-### Features
+## CLI Commands
 
-| Feature | Default | Description |
-| :--- | :--- | :--- |
-| `std` | Yes | Enables standard library support |
-
-For `no_std` environments, disable default features:
-
-```toml
-[dependencies]
-resq-dsa = { version = "0.1", default-features = false }
-```
-
-The crate uses `alloc` internally, so a global allocator is required even in `no_std` mode.
-
-### Bloom Filter
-
-Space-efficient probabilistic set membership. False positives are possible; false negatives are not.
-
-```rust
-use resq_dsa::bloom::BloomFilter;
-
-// Create a filter for ~1000 items with 1% false positive rate
-let mut bf = BloomFilter::new(1000, 0.01);
-
-// Add items
-bf.add("drone-001");
-bf.add("drone-002");
-
-// Check membership
-assert!(bf.has("drone-001"));   // definitely added
-assert!(!bf.has("drone-999"));  // definitely NOT added
-```
-
-### Count-Min Sketch
-
-Space-efficient probabilistic frequency estimation. May overcount but never undercounts.
-
-```rust
-use resq_dsa::count_min::CountMinSketch;
-
-// Create a sketch with epsilon=0.01, delta=0.01 error bounds
-let mut cms = CountMinSketch::new(0.01, 0.01);
-
-// Increment frequency counts
-cms.increment("sensor-a", 5);
-cms.increment("sensor-b", 1);
-cms.increment("sensor-a", 3);
-
-// Estimate frequency
-assert!(cms.estimate("sensor-a") >= 8);
-```
-
-### Graph
-
-Weighted directed graph with BFS traversal, Dijkstra's shortest path, and A* pathfinding.
-
-```rust
-use resq_dsa::graph::Graph;
-
-let mut g = Graph::<&str>::new();
-g.add_edge("base", "waypoint-1", 100);
-g.add_edge("waypoint-1", "target", 50);
-g.add_edge("base", "target", 200);
-
-// BFS traversal (unweighted)
-let visited = g.bfs(&"base");
-assert!(visited.contains(&"target"));
-
-// Dijkstra's shortest path
-let (path, cost) = g.dijkstra(&"base", &"target").unwrap();
-assert_eq!(path, vec!["base", "waypoint-1", "target"]);
-assert_eq!(cost, 150);
-
-// A* with heuristic
-let (path, cost) = g.astar(&"base", &"target", |_, _| 0).unwrap();
-assert_eq!(cost, 150);
-```
-
-### Bounded Heap
-
-A bounded max-heap for tracking the K smallest entries (K-nearest neighbors).
-
-```rust
-use resq_dsa::heap::BoundedHeap;
-
-// Keep the 3 nearest neighbors, using distance function
-let mut heap = BoundedHeap::new(3, |item: &(i32, i32)| {
-    ((item.0 * item.0 + item.1 * item.1) as u64)
-});
-
-heap.insert((1, 2));
-heap.insert((10, 10));
-heap.insert((0, 1));
-heap.insert((3, 3));  // evicts (10, 10) since heap is full
-
-let sorted = heap.to_sorted();
-assert_eq!(sorted.len(), 3);
-```
-
-### Trie
-
-Prefix tree for efficient string storage, exact search, and autocomplete.
-
-```rust
-use resq_dsa::trie::Trie;
-
-let mut t = Trie::new();
-t.insert("drone");
-t.insert("drone-001");
-t.insert("drone-002");
-t.insert("deploy");
-
-// Exact search
-assert!(t.search("drone"));
-assert!(!t.search("dro"));
-
-// Prefix-based autocomplete
-let results = t.starts_with("drone-");
-assert_eq!(results, vec!["drone-001", "drone-002"]);
-```
-
-### Rabin-Karp
-
-Rolling-hash string pattern matching. Returns all starting indices of pattern occurrences.
-
-```rust
-use resq_dsa::trie::rabin_karp;
-
-let indices = rabin_karp("the drone flew over the base", "the");
-assert_eq!(indices, vec![0, 23]);
-```
-
----
-
-## CLI Tools
-
-The workspace includes a suite of developer tools for the ResQ platform, all sharing a common TUI foundation via `resq-tui`.
+All tools are accessible through the unified `resq` binary, or can be installed and run independently.
 
 | Command | Tool | Description |
 | :--- | :--- | :--- |
@@ -185,12 +86,76 @@ The workspace includes a suite of developer tools for the ResQ platform, all sha
 | `resq asm` | resq-bin | Binary/machine code analysis |
 | `resq clean` | resq-clean | Interactive workspace cleaner |
 | `resq copyright` | resq-cli | Apache-2.0 license header enforcement |
+| `resq secrets` | resq-cli | Secret scanning |
+| `resq cost` | resq-cli | Dependency cost analysis |
+| `resq tree-shake` | resq-cli | Unused dependency detection |
+| `resq pre-commit` | resq-cli | Pre-commit hook runner |
 
-### Quick Start
+---
+
+## resq-dsa
+
+Production-grade data structures and algorithms with **zero external dependencies**. Supports `no_std` environments with the `alloc` crate.
 
 ```sh
-cargo install resq-cli
-resq help
+cargo add resq-dsa
+```
+
+### Data Structures
+
+| Structure | Description | Key Operations |
+| :--- | :--- | :--- |
+| [`BloomFilter`](crates/resq-dsa/) | Probabilistic set membership | `add`, `has`, `union`, `intersection` |
+| [`CountMinSketch`](crates/resq-dsa/) | Probabilistic frequency estimation | `increment`, `estimate` |
+| [`Graph<Id>`](crates/resq-dsa/) | Weighted directed graph | `bfs`, `dijkstra`, `astar` |
+| [`BoundedHeap<T>`](crates/resq-dsa/) | K-nearest neighbors heap | `insert`, `to_sorted`, `peek` |
+| [`Trie`](crates/resq-dsa/) | Prefix tree with autocomplete | `insert`, `search`, `starts_with` |
+| [`rabin_karp`](crates/resq-dsa/) | Rolling-hash string search | Pattern matching with all indices |
+
+### Example: Graph Pathfinding
+
+```rust
+use resq_dsa::graph::Graph;
+
+let mut g = Graph::<&str>::new();
+g.add_edge("base", "waypoint-1", 100);
+g.add_edge("waypoint-1", "target", 50);
+g.add_edge("base", "target", 200);
+
+let (path, cost) = g.dijkstra(&"base", &"target").unwrap();
+assert_eq!(path, vec!["base", "waypoint-1", "target"]);
+assert_eq!(cost, 150);
+```
+
+### Example: Bloom Filter
+
+```rust
+use resq_dsa::bloom::BloomFilter;
+
+let mut bf = BloomFilter::new(1000, 0.01);
+bf.add("drone-001");
+assert!(bf.has("drone-001"));   // definitely added
+assert!(!bf.has("drone-999"));  // definitely NOT added
+```
+
+See the full [resq-dsa README](crates/resq-dsa/README.md) for complete API reference with complexity tables.
+
+---
+
+## Workspace Structure
+
+```
+crates/
+├── resq-dsa/       # Data structures library (no_std, zero deps)
+├── resq-tui/       # Shared TUI components (Ratatui + Crossterm)
+├── resq-cli/       # Unified CLI entry point
+├── resq-bin/       # Binary analyzer
+├── resq-clean/     # Workspace cleaner
+├── resq-deploy/    # Deployment manager
+├── resq-flame/     # CPU profiler
+├── resq-health/    # Health monitor
+├── resq-logs/      # Log aggregator
+└── resq-perf/      # Performance dashboard
 ```
 
 ---
@@ -201,6 +166,7 @@ resq help
 
 - **Rust:** Stable toolchain via `rustup` (pinned in `rust-toolchain.toml`).
 - **Nix (optional):** For reproducible development environments, use `nix develop`.
+- **Docker (optional):** For containerized builds and deployment tools.
 
 ### Build
 
@@ -240,6 +206,15 @@ cargo fmt --all --check
 | `cargo bin` | Launch binary explorer |
 | `cargo cleanup` | Launch workspace cleaner |
 | `cargo check-all` | Fastest correctness check |
+| `cargo t` | Run all workspace tests |
+| `cargo c` | Run clippy on all targets |
+
+### Docker
+
+```sh
+docker build -t resq-cli .
+docker run --rm resq-cli --help
+```
 
 ---
 
