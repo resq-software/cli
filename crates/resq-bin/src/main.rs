@@ -31,7 +31,7 @@ use std::path::{Path, PathBuf};
 
 /// Analyze machine-level metadata and disassembly for binaries.
 #[derive(Debug, Parser)]
-#[command(name = "bin-explorer", version, about)]
+#[command(name = "resq-bin", version, about)]
 struct Args {
     /// Analyze a single binary.
     #[arg(long, conflicts_with = "dir")]

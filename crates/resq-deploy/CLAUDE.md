@@ -1,4 +1,4 @@
-# deploy-cli — Agent Guide
+# resq-deploy — Agent Guide
 
 ## Mission
 Interactive deployment manager for ResQ environments. Coordinates Docker Compose and Kubernetes actions across dev, staging, and prod from a TUI or single-action CLI mode.
@@ -34,7 +34,7 @@ cargo test -p resq-deploy
 - Production actions must target the correct overlay or namespace and remain auditable in output.
 
 ## Workflow
-1. Run `cargo build -p deploy-cli` before finalizing code changes.
+1. Run `cargo build -p resq-deploy` before finalizing code changes.
 2. Verify the affected action path against the matching Docker Compose file or K8s overlay.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, behavior change, and verification run.

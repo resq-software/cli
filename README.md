@@ -13,15 +13,15 @@
 | Crate | Description | crates.io |
 | :--- | :--- | :--- |
 | [`resq-dsa`](crates/resq-dsa/) | Data structures and algorithms -- zero dependencies | [![crates.io](https://img.shields.io/crates/v/resq-dsa?style=flat-square)](https://crates.io/crates/resq-dsa) |
-| [`resq-cli`](crates/cli/) | Unified CLI entry point (`resq` binary) | [![crates.io](https://img.shields.io/crates/v/resq-cli?style=flat-square)](https://crates.io/crates/resq-cli) |
+| [`resq-cli`](crates/resq-cli/) | Unified CLI entry point (`resq` binary) | [![crates.io](https://img.shields.io/crates/v/resq-cli?style=flat-square)](https://crates.io/crates/resq-cli) |
 | [`resq-tui`](crates/resq-tui/) | Shared Ratatui component library for all TUI tools | [![crates.io](https://img.shields.io/crates/v/resq-tui?style=flat-square)](https://crates.io/crates/resq-tui) |
-| [`resq-health`](crates/health-checker/) | Service health monitoring dashboard | [![crates.io](https://img.shields.io/crates/v/resq-health?style=flat-square)](https://crates.io/crates/resq-health) |
-| [`resq-deploy`](crates/deploy-cli/) | Kubernetes and Docker Compose deployment TUI | [![crates.io](https://img.shields.io/crates/v/resq-deploy?style=flat-square)](https://crates.io/crates/resq-deploy) |
-| [`resq-logs`](crates/log-viewer/) | Log aggregator and stream viewer | [![crates.io](https://img.shields.io/crates/v/resq-logs?style=flat-square)](https://crates.io/crates/resq-logs) |
-| [`resq-perf`](crates/perf-monitor/) | Performance monitoring dashboard | [![crates.io](https://img.shields.io/crates/v/resq-perf?style=flat-square)](https://crates.io/crates/resq-perf) |
-| [`resq-flame`](crates/flame-graph/) | CPU profiler and flame graph generator | [![crates.io](https://img.shields.io/crates/v/resq-flame?style=flat-square)](https://crates.io/crates/resq-flame) |
-| [`resq-bin`](crates/bin-explorer/) | Machine code and binary analyzer | [![crates.io](https://img.shields.io/crates/v/resq-bin?style=flat-square)](https://crates.io/crates/resq-bin) |
-| [`resq-clean`](crates/cleanup/) | Interactive workspace cleaner | [![crates.io](https://img.shields.io/crates/v/resq-clean?style=flat-square)](https://crates.io/crates/resq-clean) |
+| [`resq-health`](crates/resq-health/) | Service health monitoring dashboard | [![crates.io](https://img.shields.io/crates/v/resq-health?style=flat-square)](https://crates.io/crates/resq-health) |
+| [`resq-deploy`](crates/resq-deploy/) | Kubernetes and Docker Compose deployment TUI | [![crates.io](https://img.shields.io/crates/v/resq-deploy?style=flat-square)](https://crates.io/crates/resq-deploy) |
+| [`resq-logs`](crates/resq-logs/) | Log aggregator and stream viewer | [![crates.io](https://img.shields.io/crates/v/resq-logs?style=flat-square)](https://crates.io/crates/resq-logs) |
+| [`resq-perf`](crates/resq-perf/) | Performance monitoring dashboard | [![crates.io](https://img.shields.io/crates/v/resq-perf?style=flat-square)](https://crates.io/crates/resq-perf) |
+| [`resq-flame`](crates/resq-flame/) | CPU profiler and flame graph generator | [![crates.io](https://img.shields.io/crates/v/resq-flame?style=flat-square)](https://crates.io/crates/resq-flame) |
+| [`resq-bin`](crates/resq-bin/) | Machine code and binary analyzer | [![crates.io](https://img.shields.io/crates/v/resq-bin?style=flat-square)](https://crates.io/crates/resq-bin) |
+| [`resq-clean`](crates/resq-clean/) | Interactive workspace cleaner | [![crates.io](https://img.shields.io/crates/v/resq-clean?style=flat-square)](https://crates.io/crates/resq-clean) |
 
 ---
 
@@ -182,7 +182,7 @@ The workspace includes a suite of developer tools for the ResQ platform, all sha
 | `resq logs` | resq-logs | Aggregate and stream service logs |
 | `resq perf` | resq-perf | Real-time performance metrics |
 | `resq flame` | resq-flame | CPU profiling and flame graph generation |
-| `resq asm` | bin-explorer | Binary/machine code analysis |
+| `resq asm` | resq-bin | Binary/machine code analysis |
 | `resq clean` | resq-clean | Interactive workspace cleaner |
 | `resq copyright` | resq-cli | Apache-2.0 license header enforcement |
 

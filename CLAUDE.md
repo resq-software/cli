@@ -6,15 +6,15 @@ Crate registry and developer tooling for the ResQ platform. This workspace conta
 ## Workspace Layout
 All crates live under the `crates/` directory:
 - `crates/resq-dsa/` — Data structures and algorithms library (zero dependencies, `no_std`-compatible).
-- `crates/cli/` — The main `resq` CLI tool (entry point).
+- `crates/resq-cli/` — The main `resq` CLI tool (entry point).
 - `crates/resq-tui/` — Shared component library for all TUI tools.
-- `crates/bin-explorer/` — Machine code and binary analyzer (`resq-bin`).
-- `crates/cleanup/` — Workspace cleaner (`resq-clean`).
-- `crates/deploy-cli/` — Environment manager (`resq-deploy`).
-- `crates/flame-graph/` — CPU profiler (`resq-flame`).
-- `crates/health-checker/` — Service health monitor (`resq-health`).
-- `crates/log-viewer/` — Log aggregator (`resq-logs`).
-- `crates/perf-monitor/` — Performance dashboard (`resq-perf`).
+- `crates/resq-bin/` — Machine code and binary analyzer (`resq-bin`).
+- `crates/resq-clean/` — Workspace cleaner (`resq-clean`).
+- `crates/resq-deploy/` — Environment manager (`resq-deploy`).
+- `crates/resq-flame/` — CPU profiler (`resq-flame`).
+- `crates/resq-health/` — Service health monitor (`resq-health`).
+- `crates/resq-logs/` — Log aggregator (`resq-logs`).
+- `crates/resq-perf/` — Performance dashboard (`resq-perf`).
 
 ## Shared Standards
 - **Runtime**: Rust (latest stable).
@@ -48,4 +48,4 @@ cargo test -p resq-dsa -- --ignored  # Run complexity benchmarks
 
 ## References
 - [Root README](README.md)
-- [Individual Crate READMEs](crates/cli/README.md, crates/resq-tui/README.md, etc.)
+- [Individual Crate READMEs](crates/resq-cli/README.md, crates/resq-tui/README.md, etc.)

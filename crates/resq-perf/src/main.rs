@@ -814,7 +814,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
 
 /// CLI arguments for the performance monitor.
 #[derive(Parser)]
-#[command(name = "perf-monitor")]
+#[command(name = "resq-perf")]
 #[command(
     version,
     about = "Real-time performance monitoring TUI for ResQ services"

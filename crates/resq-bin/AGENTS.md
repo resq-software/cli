@@ -1,4 +1,4 @@
-# bin-explorer — Agent Guide
+# resq-bin — Agent Guide
 
 ## Mission
 Terminal binary and machine-code analyzer for ResQ. Used to inspect compiled artifacts, symbol/layout changes, and disassembly details during performance and debugging work.
@@ -34,8 +34,8 @@ cargo test -p resq-bin
 - Keep symbol/disassembly parsing resilient to stripped and partially malformed binaries.
 
 ## Workflow
-1. Run `cargo build -p bin-explorer` before finalizing code changes.
-2. Run `cargo test -p bin-explorer` if parsing or cache behavior changed.
+1. Run `cargo build -p resq-bin` before finalizing code changes.
+2. Run `cargo test -p resq-bin` if parsing or cache behavior changed.
 3. If you edited any `AGENTS.md`, run `./agent-sync.sh` from the repo root before finishing.
 4. Summarize: files changed, behavior change, and test output.
 

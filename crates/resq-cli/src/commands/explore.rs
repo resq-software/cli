@@ -20,7 +20,7 @@ use anyhow::{Context, Result};
 use clap::Parser;
 use std::process::Command;
 
-/// Arguments for the 'explore' (perf-monitor) command
+/// Arguments for the 'explore' (resq-perf) command
 #[derive(Parser, Debug)]
 pub struct ExploreArgs {
     /// Service URL to monitor
@@ -31,7 +31,7 @@ pub struct ExploreArgs {
     pub refresh_ms: u64,
 }
 
-/// Arguments for the 'logs' (log-viewer) command
+/// Arguments for the 'logs' (resq-logs) command
 #[derive(Parser, Debug)]
 pub struct LogsArgs {
     /// Log source: "docker" or "file"
@@ -42,7 +42,7 @@ pub struct LogsArgs {
     pub service: Option<String>,
 }
 
-/// Arguments for the 'health' (health-checker) command
+/// Arguments for the 'health' (resq-health) command
 #[derive(Parser, Debug)]
 pub struct HealthArgs {
     /// Poll interval in seconds
@@ -50,7 +50,7 @@ pub struct HealthArgs {
     pub interval: u64,
 }
 
-/// Arguments for the 'deploy' (deploy-cli) command
+/// Arguments for the 'deploy' (resq-deploy) command
 #[derive(Parser, Debug)]
 pub struct DeployArgs {
     /// Target environment: dev, staging, prod
@@ -61,7 +61,7 @@ pub struct DeployArgs {
     pub k8s: bool,
 }
 
-/// Arguments for the 'clean' (cleanup) command
+/// Arguments for the 'clean' (resq-clean) command
 #[derive(Parser, Debug)]
 pub struct CleanArgs {
     /// Preview what would be deleted without removing anything
@@ -69,7 +69,7 @@ pub struct CleanArgs {
     pub dry_run: bool,
 }
 
-/// Arguments for the 'asm' (bin-explorer) command
+/// Arguments for the 'asm' (resq-bin) command
 #[derive(Parser, Debug)]
 pub struct AsmArgs {
     /// Analyze a single binary path
@@ -84,7 +84,7 @@ pub struct AsmArgs {
     /// Optional suffix filter in batch mode (e.g. .so, .o)
     #[arg(long)]
     pub ext: Option<String>,
-    /// Optional bin-explorer config TOML path
+    /// Optional resq-bin config TOML path
     #[arg(long)]
     pub config: Option<String>,
     /// Disable cache reads/writes
@@ -110,51 +110,51 @@ pub struct AsmArgs {
     pub json: bool,
 }
 
-/// Run 'perf-monitor' (Perf-Explorer)
+/// Run resq-perf (Performance Explorer)
 pub async fn run_explore(args: ExploreArgs) -> Result<()> {
     run_tool(
-        "perf-monitor",
+        "resq-perf",
         &[&args.url, "--refresh-ms", &args.refresh_ms.to_string()],
     )
 }
 
-/// Run 'log-viewer' (Log-Explorer)
+/// Run resq-logs (Log Explorer)
 pub async fn run_logs(args: LogsArgs) -> Result<()> {
     let mut cmd_args = vec!["--source", &args.source];
     if let Some(ref s) = args.service {
         cmd_args.push("--service");
         cmd_args.push(s);
     }
-    run_tool("log-viewer", &cmd_args)
+    run_tool("resq-logs", &cmd_args)
 }
 
-/// Run 'health-checker' (Health-Explorer)
+/// Run resq-health (Health Explorer)
 pub async fn run_health(args: HealthArgs) -> Result<()> {
     run_tool(
-        "health-checker",
+        "resq-health",
         &["--interval", &args.interval.to_string()],
     )
 }
 
-/// Run 'deploy-cli' (Deploy-Explorer)
+/// Run resq-deploy (Deploy Explorer)
 pub async fn run_deploy(args: DeployArgs) -> Result<()> {
     let mut cmd_args = vec!["--env", &args.env];
     if args.k8s {
         cmd_args.push("--k8s");
     }
-    run_tool("deploy-cli", &cmd_args)
+    run_tool("resq-deploy", &cmd_args)
 }
 
-/// Run 'cleanup' (Cleanup-Explorer)
+/// Run resq-clean (Workspace Cleaner)
 pub async fn run_clean(args: CleanArgs) -> Result<()> {
     let mut cmd_args = Vec::new();
     if args.dry_run {
         cmd_args.push("--dry-run");
     }
-    run_tool("cleanup", &cmd_args)
+    run_tool("resq-clean", &cmd_args)
 }
 
-/// Run 'bin-explorer' (Asm-Explorer)
+/// Run resq-bin (Binary Explorer)
 pub async fn run_asm(args: AsmArgs) -> Result<()> {
     let mut cmd_args = Vec::new();
     if let Some(ref file) = args.file {
@@ -199,7 +199,7 @@ pub async fn run_asm(args: AsmArgs) -> Result<()> {
     if args.json {
         cmd_args.push("--json");
     }
-    run_tool("bin-explorer", &cmd_args)
+    run_tool("resq-bin", &cmd_args)
 }
 
 fn run_tool(name: &str, args: &[&str]) -> Result<()> {
