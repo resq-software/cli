@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.6](https://github.com/resq-software/crates/releases/tag/0.1.6) - 2026-04-11
+
+### Changed
+
+- Rename crate directories to match package names, fix stale references, and add comprehensive docs
+
+
+
 ## [0.1.5](https://github.com/resq-software/crates/compare/resq-tui-v0.1.4...resq-tui-v0.1.5) - 2026-04-08
 
 ### Other
