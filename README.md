@@ -1,6 +1,8 @@
 # ResQ Crates
 
 [![CI](https://img.shields.io/github/actions/workflow/status/resq-software/crates/ci.yml?branch=master&label=ci&style=flat-square)](https://github.com/resq-software/crates/actions)
+[![Docs](https://img.shields.io/github/actions/workflow/status/resq-software/crates/docs.yml?branch=master&label=docs&style=flat-square)](https://resq-software.github.io/crates/)
+[![codecov](https://img.shields.io/codecov/c/github/resq-software/crates?style=flat-square)](https://codecov.io/gh/resq-software/crates)
 [![resq-dsa](https://img.shields.io/crates/v/resq-dsa?style=flat-square&label=resq-dsa)](https://crates.io/crates/resq-dsa)
 [![resq-cli](https://img.shields.io/crates/v/resq-cli?style=flat-square&label=resq-cli)](https://crates.io/crates/resq-cli)
 [![resq-tui](https://img.shields.io/crates/v/resq-tui?style=flat-square&label=resq-tui)](https://crates.io/crates/resq-tui)
@@ -148,6 +150,38 @@ See the full [resq-dsa README](crates/resq-dsa/README.md) for complete API refer
 
 ---
 
+## Examples
+
+The [`examples/`](examples/) directory has runnable demos for every tool. Highlights:
+
+```sh
+# Run all resq-dsa examples
+cargo run -p resq-dsa --example bloom_dedup
+cargo run -p resq-dsa --example graph_routing
+cargo run -p resq-dsa --example combined_pipeline
+
+# See the full list
+cat examples/README.md
+```
+
+Each tool also has usage guides in `examples/resq-<tool>/` with sample configs, mock data, and step-by-step instructions.
+
+---
+
+## Documentation
+
+API docs are auto-generated and deployed to GitHub Pages on every push to `master`:
+
+**[resq-software.github.io/crates](https://resq-software.github.io/crates/)**
+
+Generate locally:
+
+```sh
+cargo doc --workspace --no-deps --open
+```
+
+---
+
 ## Workspace Structure
 
 ```
@@ -170,7 +204,7 @@ crates/
 
 ### Prerequisites
 
-- **Rust:** Stable toolchain via `rustup` (pinned in `rust-toolchain.toml`).
+- **Rust:** Latest stable toolchain via `rustup` (pinned in `rust-toolchain.toml`). Edition 2021.
 - **Nix (optional):** For reproducible development environments, use `nix develop`.
 - **Docker (optional):** For containerized builds and deployment tools.
 
