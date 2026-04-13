@@ -35,6 +35,7 @@ pub type Term = Terminal<CrosstermBackend<io::Stdout>>;
 /// This ensures the terminal is cleaned up even on panic or early `?` returns.
 /// Use [`Deref`] / [`DerefMut`] to access the underlying [`Term`] transparently
 /// (e.g. `guard.draw(|f| ...)` works).
+#[must_use]
 pub struct TerminalGuard {
     terminal: Term,
 }
