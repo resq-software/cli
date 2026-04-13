@@ -17,6 +17,7 @@
 //! Terminal lifecycle helpers — init, restore, and event-loop runner.
 
 use std::io;
+use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
 use crossterm::{
@@ -29,17 +30,47 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 /// A `ratatui` terminal backed by Crossterm.
 pub type Term = Terminal<CrosstermBackend<io::Stdout>>;
 
+/// RAII guard that owns a [`Term`] and automatically calls [`restore`] on drop.
+///
+/// This ensures the terminal is cleaned up even on panic or early `?` returns.
+/// Use [`Deref`] / [`DerefMut`] to access the underlying [`Term`] transparently
+/// (e.g. `guard.draw(|f| ...)` works).
+pub struct TerminalGuard {
+    terminal: Term,
+}
+
+impl Deref for TerminalGuard {
+    type Target = Term;
+
+    fn deref(&self) -> &Self::Target {
+        &self.terminal
+    }
+}
+
+impl DerefMut for TerminalGuard {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.terminal
+    }
+}
+
+impl Drop for TerminalGuard {
+    fn drop(&mut self) {
+        restore();
+    }
+}
+
 /// Initialise raw mode and enter the alternate screen.
 ///
-/// Returns a ready-to-use [`Term`]. Call [`restore`] when finished.
+/// Returns a [`TerminalGuard`] that will call [`restore`] automatically when
+/// dropped, ensuring cleanup even on panic or early `?` returns.
 ///
 /// # Errors
 /// Propagates any I/O error from Crossterm or Ratatui.
-pub fn init() -> anyhow::Result<Term> {
+pub fn init() -> anyhow::Result<TerminalGuard> {
     enable_raw_mode()?;
     execute!(io::stdout(), EnterAlternateScreen)?;
     let terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
-    Ok(terminal)
+    Ok(TerminalGuard { terminal })
 }
 
 /// Leave the alternate screen and disable raw mode.
@@ -70,7 +101,11 @@ pub trait TuiApp {
 ///
 /// # Errors
 /// Propagates draw or event errors, and errors from the app's `handle_key`.
-pub fn run_loop(terminal: &mut Term, poll_ms: u64, app: &mut dyn TuiApp) -> anyhow::Result<()> {
+pub fn run_loop(
+    terminal: &mut TerminalGuard,
+    poll_ms: u64,
+    app: &mut dyn TuiApp,
+) -> anyhow::Result<()> {
     let timeout = Duration::from_millis(poll_ms);
     loop {
         terminal.draw(|f| app.draw(f))?;

@@ -163,7 +163,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(i32::from(healthy != total));
     }
 
-    let mut terminal = terminal::init()?;
+    let mut guard = terminal::init()?;
     execute!(io::stdout(), EnableMouseCapture)?;
 
     let (event_tx, mut event_rx) = mpsc::channel(32);
@@ -206,7 +206,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut app = App::new();
 
     loop {
-        terminal.draw(|f| draw_ui(f, &mut app))?;
+        guard.draw(|f| draw_ui(f, &mut app))?;
 
         tokio::select! {
             Some(services) = reg_rx.recv() => {
@@ -235,7 +235,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     execute!(io::stdout(), DisableMouseCapture)?;
-    terminal::restore();
+    drop(guard);
     Ok(())
 }
 
