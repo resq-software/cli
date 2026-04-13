@@ -303,7 +303,7 @@ mod tests {
         let dists: Vec<f64> = h.to_sorted().iter().map(|x| x.dist).collect();
         // Must be in ascending order
         for w in dists.windows(2) {
-            assert!(w[0] <= w[1], "to_sorted not ascending: {:?}", dists);
+            assert!(w[0] <= w[1], "to_sorted not ascending: {dists:?}");
         }
     }
 
@@ -322,7 +322,7 @@ mod tests {
         for i in (0..10).rev() {
             h.insert(Item {
                 id: i,
-                dist: i as f64,
+                dist: f64::from(i),
             });
         }
         assert_eq!(h.len(), 3);
@@ -337,7 +337,7 @@ mod tests {
         for i in 0..10 {
             h.insert(Item {
                 id: i,
-                dist: i as f64,
+                dist: f64::from(i),
             });
         }
         assert_eq!(h.len(), 3);
@@ -348,7 +348,7 @@ mod tests {
     #[test]
     fn single_insert_then_peek() {
         let mut h = BoundedHeap::new(5, |x: &Item| x.dist);
-        h.insert(Item { id: 42, dist: 3.14 });
+        h.insert(Item { id: 42, dist: 3.25 });
         assert_eq!(h.len(), 1);
         assert!(!h.is_empty());
         assert_eq!(h.peek().unwrap().id, 42);

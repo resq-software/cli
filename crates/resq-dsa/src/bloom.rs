@@ -307,7 +307,7 @@ mod tests {
             }
         }
 
-        let observed_fpr = false_positives as f64 / test_count as f64;
+        let observed_fpr = f64::from(false_positives) / f64::from(test_count);
         // Allow 2x the target rate as headroom for hash quality variance
         assert!(
             observed_fpr < target_fpr * 2.0,

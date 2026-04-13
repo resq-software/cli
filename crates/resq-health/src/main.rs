@@ -138,7 +138,7 @@ impl App {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let poll_interval = Duration::from_secs(args.interval);
 
@@ -204,9 +204,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     let mut app = App::new();
+    let mut result: anyhow::Result<()> = Ok(());
 
     loop {
-        guard.draw(|f| draw_ui(f, &mut app))?;
+        if let Err(e) = guard.draw(|f| draw_ui(f, &mut app)) {
+            result = Err(e.into());
+            break;
+        }
 
         tokio::select! {
             Some(services) = reg_rx.recv() => {
@@ -234,9 +238,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    execute!(io::stdout(), DisableMouseCapture)?;
+    // Cleanup is unconditional — runs even if the loop errored
+    let _ = execute!(io::stdout(), DisableMouseCapture);
     drop(guard);
-    Ok(())
+    result
 }
 
 fn draw_ui(f: &mut Frame, app: &mut App) {

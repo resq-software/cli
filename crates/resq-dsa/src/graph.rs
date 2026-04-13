@@ -414,7 +414,7 @@ mod tests {
         let manhattan = |a: &i32, b: &i32| -> u64 {
             let (ar, ac) = (a / 10, a % 10);
             let (br, bc) = (b / 10, b % 10);
-            ((ar - br).unsigned_abs() as u64) + ((ac - bc).unsigned_abs() as u64)
+            u64::from((ar - br).unsigned_abs()) + u64::from((ac - bc).unsigned_abs())
         };
 
         let (path, cost) = g.astar(&0, &12, manhattan).expect("Path should exist");

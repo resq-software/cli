@@ -35,7 +35,7 @@ pub type Term = Terminal<CrosstermBackend<io::Stdout>>;
 /// This ensures the terminal is cleaned up even on panic or early `?` returns.
 /// Use [`Deref`] / [`DerefMut`] to access the underlying [`Term`] transparently
 /// (e.g. `guard.draw(|f| ...)` works).
-#[must_use]
+#[must_use = "dropping the guard immediately restores the terminal — assign it to a variable"]
 pub struct TerminalGuard {
     terminal: Term,
 }
@@ -69,9 +69,17 @@ impl Drop for TerminalGuard {
 /// Propagates any I/O error from Crossterm or Ratatui.
 pub fn init() -> anyhow::Result<TerminalGuard> {
     enable_raw_mode()?;
-    execute!(io::stdout(), EnterAlternateScreen)?;
-    let terminal = Terminal::new(CrosstermBackend::new(io::stdout()))?;
-    Ok(TerminalGuard { terminal })
+    if let Err(e) = execute!(io::stdout(), EnterAlternateScreen) {
+        let _ = disable_raw_mode();
+        return Err(e.into());
+    }
+    match Terminal::new(CrosstermBackend::new(io::stdout())) {
+        Ok(terminal) => Ok(TerminalGuard { terminal }),
+        Err(e) => {
+            restore();
+            Err(e.into())
+        }
+    }
 }
 
 /// Leave the alternate screen and disable raw mode.
@@ -102,11 +110,7 @@ pub trait TuiApp {
 ///
 /// # Errors
 /// Propagates draw or event errors, and errors from the app's `handle_key`.
-pub fn run_loop(
-    terminal: &mut TerminalGuard,
-    poll_ms: u64,
-    app: &mut dyn TuiApp,
-) -> anyhow::Result<()> {
+pub fn run_loop(terminal: &mut Term, poll_ms: u64, app: &mut dyn TuiApp) -> anyhow::Result<()> {
     let timeout = Duration::from_millis(poll_ms);
     loop {
         terminal.draw(|f| app.draw(f))?;

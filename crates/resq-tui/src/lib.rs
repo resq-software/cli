@@ -352,7 +352,7 @@ mod tests {
     fn format_duration_days() {
         assert_eq!(format_duration(86400), "1d 0h 0m");
         assert_eq!(format_duration(90061), "1d 1h 1m");
-        assert_eq!(format_duration(172800), "2d 0h 0m");
+        assert_eq!(format_duration(172_800), "2d 0h 0m");
     }
 
     // -----------------------------------------------------------------------
@@ -443,6 +443,7 @@ mod tests {
     // -----------------------------------------------------------------------
 
     #[test]
+    #[allow(clippy::const_is_empty)]
     fn spinner_frames_not_empty() {
         assert!(!SPINNER_FRAMES.is_empty());
     }

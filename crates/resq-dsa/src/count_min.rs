@@ -226,7 +226,7 @@ mod tests {
         // Insert many different keys and verify each estimate >= actual count
         for i in 0..200 {
             let key = format!("key-{i}");
-            let count = (i as u64) + 1;
+            let count = u64::try_from(i).unwrap() + 1;
             cms.increment(&key, count);
             assert!(
                 cms.estimate(&key) >= count,
@@ -265,7 +265,7 @@ mod tests {
         cms.increment("max", u64::MAX);
         cms.increment("max", 1);
         // Should saturate, not wrap around
-        assert!(cms.estimate("max") >= u64::MAX);
+        assert_eq!(cms.estimate("max"), u64::MAX);
     }
 
     #[test]
