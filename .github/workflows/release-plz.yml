@@ -44,7 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "$RELEASES" \
-            | jq -r '.[] | select(.package_name == "resq-cli") | .tag_name' \
+            | jq -r '.[] | select(.package_name == "resq-cli") | .tag' \
             | while read -r tag; do
                 [ -z "$tag" ] && continue
                 echo "→ dispatching release.yml for tag=$tag"
