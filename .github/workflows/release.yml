@@ -142,15 +142,14 @@ jobs:
           fi
 
           echo "→ creating draft release $TAG with assets"
+          # Notes kept single-line: YAML block scalars treat any line at
+          # column 0 (including blank lines inside a multi-line `--notes`
+          # value) as terminating the block.
           gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --draft \
             --title "$TAG" \
-            --notes "Binary build for $TAG.
-
-Cross-platform resq CLI binaries + SHA256SUMS. Verify with:
-
-    sha256sum -c SHA256SUMS" \
+            --notes "Binary build for $TAG. Cross-platform resq CLI binaries + SHA256SUMS. Verify with: sha256sum -c SHA256SUMS" \
             -- *
 
           echo "→ publishing release $TAG (becomes immutable)"
