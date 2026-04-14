@@ -49,3 +49,7 @@ cargo test -p resq-dsa -- --ignored  # Run complexity benchmarks
 ## References
 - [Root README](README.md)
 - [Individual Crate READMEs](crates/resq-cli/README.md, crates/resq-tui/README.md, etc.)
+
+## Git hooks
+
+Canonical hooks are maintained in [`resq-software/dev`](https://github.com/resq-software/dev/tree/main/scripts/git-hooks) and delegate to `resq pre-commit` from this workspace. This repo's own `.git-hooks/` predates the canonical contract and builds `resq-cli` locally as a bootstrap — it will converge on the canonical shims once `resq dev install-hooks` can scaffold from embedded templates. See [dev/AGENTS.md#git-hooks](https://github.com/resq-software/dev/blob/main/AGENTS.md#git-hooks).
