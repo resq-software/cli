@@ -15,13 +15,40 @@ jobs:
   release-plz:
     name: Release-plz
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write   # required to dispatch release.yml below
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
       - uses: dtolnay/rust-toolchain@stable
-      - uses: MarcoIeni/release-plz-action@v0.5
+      - id: release-plz
+        uses: MarcoIeni/release-plz-action@v0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+
+      # Tags pushed by this job run under GITHUB_TOKEN, which by design
+      # does NOT trigger downstream `on: push: tags:` workflows. Read the
+      # action's `releases` JSON output and dispatch release.yml explicitly
+      # for each newly-cut resq-cli-v* tag — workflow_dispatch IS allowed
+      # from GITHUB_TOKEN, so the hop works without a PAT.
+      - name: Dispatch release.yml for new resq-cli-v* tags
+        if: steps.release-plz.outputs.releases != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASES: ${{ steps.release-plz.outputs.releases }}
+        run: |
+          set -euo pipefail
+          echo "$RELEASES" \
+            | jq -r '.[] | select(.package_name == "resq-cli") | .tag_name' \
+            | while read -r tag; do
+                [ -z "$tag" ] && continue
+                echo "→ dispatching release.yml for tag=$tag"
+                gh workflow run release.yml \
+                  --repo "$GITHUB_REPOSITORY" \
+                  -f tag="$tag"
+              done
