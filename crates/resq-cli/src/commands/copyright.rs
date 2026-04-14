@@ -375,6 +375,41 @@ static SPDX_RE: std::sync::LazyLock<Regex> = std::sync::LazyLock::new(|| {
     Regex::new(r"(?i)SPDX-License-Identifier:\s*([\w\-.]+)").expect("Static regex pattern is valid")
 });
 
+/// `Copyright [(c)] YEAR[-YEAR] <AUTHOR>` — captures the author tail up to
+/// end-of-line. The caller strips trailing "All rights reserved."
+/// boilerplate; legal-name periods (`Inc.`, `LLC.`) are preserved.
+#[allow(clippy::expect_used)]
+static AUTHOR_RE: std::sync::LazyLock<Regex> = std::sync::LazyLock::new(|| {
+    Regex::new(r"(?im)Copyright\s*(?:\([cC]\))?\s*\d{4}(?:\s*[-,]\s*\d{4})?\s*,?\s*([^\r\n]+)$")
+        .expect("Static regex pattern is valid")
+});
+
+/// Detect the author name in the existing header.
+/// Returns the trimmed author string, or `None` if no recognisable
+/// `Copyright YEAR <author>` line is found in the first 20 lines.
+fn detect_header_author(content: &str) -> Option<String> {
+    let head: String = content.lines().take(20).collect::<Vec<_>>().join("\n");
+    let caps = AUTHOR_RE.captures(&head)?;
+    let raw = caps.get(1)?.as_str().trim();
+
+    // Strip "All rights reserved" boilerplate (case-insensitive). Preserve
+    // the trailing period of legal suffixes like "Inc." / "Corp." — only
+    // strip a separator comma or whitespace between the name and the
+    // boilerplate (e.g. BSD's "Acme, All rights reserved").
+    let lower = raw.to_ascii_lowercase();
+    let cleaned = if let Some(idx) = lower.rfind("all rights reserved") {
+        raw[..idx].trim_end().trim_end_matches(',').trim_end()
+    } else {
+        raw.trim_end_matches(|c: char| c == ',' || c.is_whitespace())
+    };
+
+    if cleaned.is_empty() {
+        None
+    } else {
+        Some(cleaned.to_string())
+    }
+}
+
 /// Detect which license the existing header uses.
 /// Returns a SPDX-style identifier or `None` if unrecognised.
 fn detect_header_license(content: &str) -> Option<&'static str> {
@@ -790,18 +825,35 @@ fn process_file(
     } else {
         None
     };
-    let is_mismatch = already_has_header && detected_license.is_some_and(|d| d != args.license);
+    let detected_author = if already_has_header {
+        detect_header_author(&content)
+    } else {
+        None
+    };
+    let is_license_mismatch =
+        already_has_header && detected_license.is_some_and(|d| d != args.license);
+    let is_author_mismatch =
+        already_has_header && detected_author.as_deref().is_some_and(|a| a != args.author);
+    let is_mismatch = is_license_mismatch || is_author_mismatch;
 
     // --check mode: report missing *and* mismatched headers.
     if args.check {
         if !already_has_header {
             println!("Missing header: {}", path.display());
             stats.missing += 1;
-        } else if is_mismatch {
+        } else if is_license_mismatch {
             println!(
                 "Mismatched license ({} → {}): {}",
                 detected_license.unwrap_or("unknown"),
                 args.license,
+                path.display()
+            );
+            stats.mismatched += 1;
+        } else if is_author_mismatch {
+            println!(
+                "Mismatched author ({} → {}): {}",
+                detected_author.as_deref().unwrap_or("unknown"),
+                args.author,
                 path.display()
             );
             stats.mismatched += 1;
@@ -812,7 +864,7 @@ fn process_file(
     // Decide whether we need to rewrite this file.
     let needs_rewrite = !already_has_header       // no header yet
         || args.force                              // explicit force
-        || is_mismatch; // wrong license
+        || is_mismatch; // wrong license OR wrong author
 
     if !needs_rewrite {
         if args.verbose {
@@ -1108,6 +1160,84 @@ mod tests {
             detect_header_license("// Copyright (c) 2024 Acme\nfn main() {}"),
             None
         );
+    }
+
+    // ── Author Detection Tests ──────────────────────────────────────────
+
+    #[test]
+    fn test_detect_author_basic() {
+        assert_eq!(
+            detect_header_author("# Copyright 2026 ResQ Software\nfoo"),
+            Some("ResQ Software".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_with_c_marker_preserves_legal_period() {
+        // "Corp." ending must stay — it's part of the legal name.
+        assert_eq!(
+            detect_header_author("// Copyright (c) 2024 Acme Corp.\nfn main() {}"),
+            Some("Acme Corp.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_with_capital_c_marker() {
+        assert_eq!(
+            detect_header_author("# Copyright (C) 2024 Acme\nx = 1"),
+            Some("Acme".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_year_range_preserves_inc_period() {
+        // "ResQ Systems, Inc." with trailing legal period must round-trip.
+        assert_eq!(
+            detect_header_author("// Copyright 2024-2026 ResQ Systems, Inc.\nfn main() {}"),
+            Some("ResQ Systems, Inc.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_strips_all_rights_reserved() {
+        assert_eq!(
+            detect_header_author(
+                "/*\n * Copyright (c) 2024 Acme Corp. All rights reserved.\n */\nint main() {}"
+            ),
+            Some("Acme Corp.".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_bsd_comma() {
+        assert_eq!(
+            detect_header_author(
+                "/*\n * Copyright (c) 2024, Acme\n * All rights reserved.\n */\nint main() {}"
+            ),
+            Some("Acme".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_block_comment() {
+        let content = "/*\n * Copyright 2026 ResQ Software\n *\n * Licensed under Apache-2.0\n */\nfn main() {}";
+        assert_eq!(
+            detect_header_author(content),
+            Some("ResQ Software".to_string())
+        );
+    }
+
+    #[test]
+    fn test_detect_author_none_when_no_copyright_line() {
+        assert_eq!(
+            detect_header_author("// SPDX-License-Identifier: Apache-2.0\nfn main() {}"),
+            None
+        );
+    }
+
+    #[test]
+    fn test_detect_author_none_on_empty() {
+        assert_eq!(detect_header_author(""), None);
     }
 
     // ── Body License-Name Replacement Tests ─────────────────────────────
