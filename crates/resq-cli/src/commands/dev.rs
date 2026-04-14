@@ -97,12 +97,30 @@ pub fn run(args: DevArgs) -> Result<()> {
 /// https://github.com/resq-software/dev/tree/main/scripts/git-hooks — both
 /// sources ship the same content until `dev` retires its copy.
 const HOOK_TEMPLATES: &[(&str, &str)] = &[
-    ("pre-commit",         include_str!("../../templates/git-hooks/pre-commit")),
-    ("commit-msg",         include_str!("../../templates/git-hooks/commit-msg")),
-    ("prepare-commit-msg", include_str!("../../templates/git-hooks/prepare-commit-msg")),
-    ("pre-push",           include_str!("../../templates/git-hooks/pre-push")),
-    ("post-checkout",      include_str!("../../templates/git-hooks/post-checkout")),
-    ("post-merge",         include_str!("../../templates/git-hooks/post-merge")),
+    (
+        "pre-commit",
+        include_str!("../../templates/git-hooks/pre-commit"),
+    ),
+    (
+        "commit-msg",
+        include_str!("../../templates/git-hooks/commit-msg"),
+    ),
+    (
+        "prepare-commit-msg",
+        include_str!("../../templates/git-hooks/prepare-commit-msg"),
+    ),
+    (
+        "pre-push",
+        include_str!("../../templates/git-hooks/pre-push"),
+    ),
+    (
+        "post-checkout",
+        include_str!("../../templates/git-hooks/post-checkout"),
+    ),
+    (
+        "post-merge",
+        include_str!("../../templates/git-hooks/post-merge"),
+    ),
 ];
 
 fn run_install_hooks() -> Result<()> {
@@ -128,13 +146,8 @@ fn run_install_hooks() -> Result<()> {
             }
             std::fs::write(&dest, body)
                 .with_context(|| format!("Failed to write {}", dest.display()))?;
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                let mut perms = std::fs::metadata(&dest)?.permissions();
-                perms.set_mode(0o755);
-                std::fs::set_permissions(&dest, perms)?;
-            }
+            // Permissions are set below by the executable-bit loop that runs
+            // for every file in hooks_dir; no need to chmod again here.
         }
     }
 
