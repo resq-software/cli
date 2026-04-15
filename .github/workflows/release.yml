@@ -110,7 +110,7 @@ jobs:
       - name: Compute checksums
         run: |
           cd dist
-          sha256sum * > SHA256SUMS
+          sha256sum -- * > SHA256SUMS
 
       # Create as DRAFT first, upload assets, THEN publish. The org
       # enforces "immutable releases", which means a release is locked the
