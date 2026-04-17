@@ -30,6 +30,8 @@
 
 /// Blockchain event auditing.
 pub mod audit;
+/// AI-powered commit message generation.
+pub mod commit;
 /// Copyright header management.
 pub mod copyright;
 /// Development server management.
