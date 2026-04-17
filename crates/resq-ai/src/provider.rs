@@ -63,11 +63,19 @@ impl Provider {
     }
 }
 
-/// Placeholder — full dispatch comes later.
+/// Send a completion request to the configured provider.
+///
+/// # Errors
+///
+/// Returns an error on network failure, auth failure, or empty response.
 pub async fn complete(
-    _config: &super::AiConfig,
-    _system: &str,
-    _user: &str,
+    config: &super::AiConfig,
+    system: &str,
+    user: &str,
 ) -> anyhow::Result<String> {
-    anyhow::bail!("not yet implemented")
+    match config.provider {
+        Provider::Anthropic => crate::anthropic::complete(config, system, user).await,
+        Provider::OpenAi => crate::openai::complete(config, system, user).await,
+        Provider::Gemini => crate::gemini::complete(config, system, user).await,
+    }
 }

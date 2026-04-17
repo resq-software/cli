@@ -175,21 +175,55 @@ mod tests {
         assert!(!debug_str.contains("sk-secret"));
     }
 
+    // NOTE: These env-var tests must run with --test-threads=1 or they
+    // will race. `cargo test -p resq-ai -- --test-threads=1` is the
+    // safe invocation. Alternatively, only test non-env-dependent paths.
+
     #[test]
     fn load_config_fails_without_api_key() {
-        env::remove_var("ANTHROPIC_API_KEY");
-        env::remove_var("OPENAI_API_KEY");
-        env::remove_var("GEMINI_API_KEY");
-        env::remove_var("RESQ_AI_PROVIDER");
+        // Save and clear all possible keys
+        let saved: Vec<(&str, Option<String>)> = [
+            "ANTHROPIC_API_KEY",
+            "OPENAI_API_KEY",
+            "GEMINI_API_KEY",
+            "RESQ_AI_PROVIDER",
+            "RESQ_AI_MODEL",
+            "RESQ_AI_BASE_URL",
+        ]
+        .iter()
+        .map(|k| (*k, env::var(k).ok()))
+        .collect();
+
+        for (k, _) in &saved {
+            env::remove_var(k);
+        }
 
         let result = load_config();
         assert!(result.is_err());
         let err = result.unwrap_err().to_string();
         assert!(err.contains("ANTHROPIC_API_KEY"));
+
+        // Restore
+        for (k, v) in saved {
+            match v {
+                Some(val) => env::set_var(k, val),
+                None => env::remove_var(k),
+            }
+        }
     }
 
     #[test]
     fn load_config_with_env_vars() {
+        // Save originals
+        let saved: Vec<(&str, Option<String>)> = [
+            "RESQ_AI_PROVIDER",
+            "OPENAI_API_KEY",
+            "RESQ_AI_MODEL",
+        ]
+        .iter()
+        .map(|k| (*k, env::var(k).ok()))
+        .collect();
+
         env::set_var("RESQ_AI_PROVIDER", "openai");
         env::set_var("OPENAI_API_KEY", "sk-test-key");
         env::set_var("RESQ_AI_MODEL", "gpt-4o-mini");
@@ -200,9 +234,13 @@ mod tests {
         assert_eq!(cfg.api_key(), "sk-test-key");
         assert_eq!(cfg.max_tokens, 1024);
 
-        env::remove_var("RESQ_AI_PROVIDER");
-        env::remove_var("OPENAI_API_KEY");
-        env::remove_var("RESQ_AI_MODEL");
+        // Restore
+        for (k, v) in saved {
+            match v {
+                Some(val) => env::set_var(k, val),
+                None => env::remove_var(k),
+            }
+        }
     }
 
     #[test]
