@@ -77,11 +77,7 @@ pub(crate) async fn complete(config: &AiConfig, system: &str, user: &str) -> Res
         .base_url
         .as_deref()
         .unwrap_or("https://generativelanguage.googleapis.com");
-    let url = format!(
-        "{base}/v1beta/models/{}:generateContent?key={}",
-        config.model,
-        config.api_key()
-    );
+    let url = format!("{base}/v1beta/models/{}:generateContent", config.model);
 
     let body = GenerateRequest {
         system_instruction: SystemInstruction {
@@ -99,6 +95,7 @@ pub(crate) async fn complete(config: &AiConfig, system: &str, user: &str) -> Res
     let client = reqwest::Client::new();
     let resp = client
         .post(&url)
+        .header("x-goog-api-key", config.api_key())
         .header("content-type", "application/json")
         .timeout(std::time::Duration::from_secs(config.timeout_secs))
         .json(&body)

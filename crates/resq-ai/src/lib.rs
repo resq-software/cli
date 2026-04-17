@@ -16,7 +16,7 @@
 
 //! Multi-provider LLM abstraction for `ResQ` developer tools.
 //!
-//! Supports Anthropic, OpenAI, and Google Gemini APIs with a unified
+//! Supports Anthropic, `OpenAI`, and Google Gemini APIs with a unified
 //! `complete()` interface and cascading config resolution.
 
 #![deny(missing_docs)]

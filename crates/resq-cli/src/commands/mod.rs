@@ -19,6 +19,7 @@
 //! # Commands
 //!
 //! - [`audit`] - Dependency + supply-chain audit
+//! - [`commit`] - AI-powered commit message generation
 //! - [`copyright`] - Check/update copyright headers
 //! - [`dev`] - Repo development utilities
 //! - [`docs`] - Documentation export + publication

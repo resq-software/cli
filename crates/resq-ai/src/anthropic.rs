@@ -42,7 +42,8 @@ struct MessagesResponse {
 
 #[derive(Deserialize)]
 struct ContentBlock {
-    text: String,
+    #[serde(default)]
+    text: Option<String>,
 }
 
 /// Send a completion request to the Anthropic Messages API.
@@ -85,9 +86,8 @@ pub(crate) async fn complete(config: &AiConfig, system: &str, user: &str) -> Res
     parsed
         .content
         .into_iter()
-        .next()
-        .map(|c| c.text)
-        .context("Empty response from Anthropic")
+        .find_map(|c| c.text)
+        .context("No text content in Anthropic response")
 }
 
 #[cfg(test)]
@@ -114,6 +114,6 @@ mod tests {
     fn response_deserialization() {
         let json = r#"{"content":[{"type":"text","text":"Hello back!"}]}"#;
         let resp: MessagesResponse = serde_json::from_str(json).unwrap();
-        assert_eq!(resp.content[0].text, "Hello back!");
+        assert_eq!(resp.content[0].text.as_deref(), Some("Hello back!"));
     }
 }

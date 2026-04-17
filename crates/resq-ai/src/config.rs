@@ -78,17 +78,18 @@ pub fn load_config() -> Result<AiConfig> {
     let home_cfg = load_toml_config(home_config_path());
     let project_cfg = load_toml_config(project_config_path());
 
-    let provider = env::var("RESQ_AI_PROVIDER")
-        .ok()
-        .and_then(|s| match s.to_lowercase().as_str() {
-            "anthropic" => Some(Provider::Anthropic),
-            "openai" => Some(Provider::OpenAi),
-            "gemini" => Some(Provider::Gemini),
-            _ => None,
-        })
-        .or(project_cfg.provider)
-        .or(home_cfg.provider)
-        .unwrap_or(Provider::Anthropic);
+    let provider = match env::var("RESQ_AI_PROVIDER") {
+        Ok(s) => match s.to_lowercase().as_str() {
+            "anthropic" => Provider::Anthropic,
+            "openai" => Provider::OpenAi,
+            "gemini" => Provider::Gemini,
+            other => bail!("Unknown RESQ_AI_PROVIDER={other:?}. Use: anthropic, openai, gemini"),
+        },
+        Err(_) => project_cfg
+            .provider
+            .or(home_cfg.provider)
+            .unwrap_or(Provider::Anthropic),
+    };
 
     let model = env::var("RESQ_AI_MODEL")
         .ok()
@@ -159,28 +160,32 @@ fn load_toml_config(path: Option<PathBuf>) -> FileConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Mutex;
+
+    /// Serialize env-mutating tests to prevent races under parallel test harness.
+    static ENV_LOCK: Mutex<()> = Mutex::new(());
 
     #[test]
     fn debug_redacts_api_key() {
         let cfg = AiConfig {
             provider: Provider::Anthropic,
             model: "test".to_string(),
-            api_key: "sk-secret-key-12345".to_string(),
+            api_key: "test-placeholder-value".to_string(),
             base_url: None,
             max_tokens: 1024,
             timeout_secs: 30,
         };
         let debug_str = format!("{cfg:?}");
         assert!(debug_str.contains("[REDACTED]"));
-        assert!(!debug_str.contains("sk-secret"));
+        assert!(!debug_str.contains("test-placeholder"));
     }
-
-    // NOTE: These env-var tests must run with --test-threads=1 or they
-    // will race. `cargo test -p resq-ai -- --test-threads=1` is the
-    // safe invocation. Alternatively, only test non-env-dependent paths.
 
     #[test]
     fn load_config_fails_without_api_key() {
+        let _guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+
         // Save and clear all possible keys
         let saved: Vec<(&str, Option<String>)> = [
             "ANTHROPIC_API_KEY",
@@ -214,24 +219,25 @@ mod tests {
 
     #[test]
     fn load_config_with_env_vars() {
+        let _guard = ENV_LOCK
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
+
         // Save originals
-        let saved: Vec<(&str, Option<String>)> = [
-            "RESQ_AI_PROVIDER",
-            "OPENAI_API_KEY",
-            "RESQ_AI_MODEL",
-        ]
-        .iter()
-        .map(|k| (*k, env::var(k).ok()))
-        .collect();
+        let saved: Vec<(&str, Option<String>)> =
+            ["RESQ_AI_PROVIDER", "OPENAI_API_KEY", "RESQ_AI_MODEL"]
+                .iter()
+                .map(|k| (*k, env::var(k).ok()))
+                .collect();
 
         env::set_var("RESQ_AI_PROVIDER", "openai");
-        env::set_var("OPENAI_API_KEY", "sk-test-key");
+        env::set_var("OPENAI_API_KEY", "test-placeholder-value");
         env::set_var("RESQ_AI_MODEL", "gpt-4o-mini");
 
         let cfg = load_config().unwrap();
         assert_eq!(cfg.provider, Provider::OpenAi);
         assert_eq!(cfg.model, "gpt-4o-mini");
-        assert_eq!(cfg.api_key(), "sk-test-key");
+        assert_eq!(cfg.api_key(), "test-placeholder-value");
         assert_eq!(cfg.max_tokens, 1024);
 
         // Restore
@@ -245,7 +251,10 @@ mod tests {
 
     #[test]
     fn provider_defaults() {
-        assert_eq!(Provider::Anthropic.default_model(), "claude-sonnet-4-20250514");
+        assert_eq!(
+            Provider::Anthropic.default_model(),
+            "claude-sonnet-4-20250514"
+        );
         assert_eq!(Provider::OpenAi.default_model(), "gpt-4o");
         assert_eq!(Provider::Gemini.default_model(), "gemini-2.0-flash");
     }

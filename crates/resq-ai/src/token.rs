@@ -19,7 +19,7 @@
 /// Estimate token count using the chars/4 heuristic.
 #[must_use]
 pub fn estimate_tokens(text: &str) -> usize {
-    (text.len() + 3) / 4
+    text.len().div_ceil(4)
 }
 
 /// Truncate text to fit within a token budget.
@@ -31,7 +31,12 @@ pub fn truncate_to_budget(text: &str, max_tokens: usize) -> &str {
         return text;
     }
 
-    let slice = &text[..max_chars.min(text.len())];
+    let mut end = max_chars.min(text.len());
+    // Ensure we don't slice in the middle of a multi-byte UTF-8 character
+    while !text.is_char_boundary(end) {
+        end -= 1;
+    }
+    let slice = &text[..end];
     match slice.rfind('\n') {
         Some(pos) => &text[..=pos],
         None => slice,

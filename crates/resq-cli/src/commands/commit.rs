@@ -25,7 +25,7 @@ use crossterm::{
     terminal::{self, ClearType},
 };
 use regex::Regex;
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 use std::process::Command;
 
 /// Arguments for the `resq commit` command.
@@ -187,8 +187,28 @@ fn parse_candidates(response: &str) -> Result<Vec<String>> {
 // Interactive selector (crossterm-based)
 // -------------------------------------------------------------------------
 
+/// RAII guard to restore terminal raw mode on drop.
+struct RawModeGuard;
+
+impl RawModeGuard {
+    fn enable() -> Result<Self> {
+        terminal::enable_raw_mode()?;
+        Ok(Self)
+    }
+}
+
+impl Drop for RawModeGuard {
+    fn drop(&mut self) {
+        let _ = terminal::disable_raw_mode();
+    }
+}
+
 fn select_candidate(candidates: &[String]) -> Result<Option<usize>> {
-    terminal::enable_raw_mode()?;
+    if !io::stdout().is_terminal() {
+        bail!("Interactive selection requires a TTY. Use --yes or --dry-run in non-interactive contexts.");
+    }
+
+    let _guard = RawModeGuard::enable()?;
     let mut stdout = io::stdout();
     let mut selected: usize = 0;
     let total = candidates.len();
@@ -202,12 +222,10 @@ fn select_candidate(candidates: &[String]) -> Result<Option<usize>> {
                 KeyCode::Up | KeyCode::Char('k') if selected > 0 => selected -= 1,
                 KeyCode::Down | KeyCode::Char('j') if selected < total - 1 => selected += 1,
                 KeyCode::Enter => {
-                    terminal::disable_raw_mode()?;
                     clear_selector(&mut stdout, total)?;
                     return Ok(Some(selected));
                 }
                 KeyCode::Esc | KeyCode::Char('q') => {
-                    terminal::disable_raw_mode()?;
                     clear_selector(&mut stdout, total)?;
                     return Ok(None);
                 }
@@ -277,8 +295,7 @@ pub async fn run(args: CommitArgs) -> Result<()> {
     config.timeout_secs = args.timeout;
 
     // 4. Build prompt
-    let (system, user_prompt) =
-        build_prompt(truncated, &recent, args.scope.as_deref(), args.count);
+    let (system, user_prompt) = build_prompt(truncated, &recent, args.scope.as_deref(), args.count);
 
     if args.verbose {
         eprintln!("--- System prompt ---\n{system}\n---");
@@ -304,9 +321,7 @@ pub async fn run(args: CommitArgs) -> Result<()> {
         .collect();
 
     if valid.is_empty() {
-        bail!(
-            "LLM returned no valid Conventional Commit messages. Try again or write manually."
-        );
+        bail!("LLM returned no valid Conventional Commit messages. Try again or write manually.");
     }
 
     // 7. Select
@@ -365,7 +380,9 @@ mod tests {
     #[test]
     fn validate_cc_valid() {
         assert!(validate_conventional_commit("feat: add new feature"));
-        assert!(validate_conventional_commit("fix(ui): correct button color"));
+        assert!(validate_conventional_commit(
+            "fix(ui): correct button color"
+        ));
         assert!(validate_conventional_commit("feat!: remove deprecated API"));
         assert!(validate_conventional_commit(
             "chore(deps): bump serde to 1.0.200"
