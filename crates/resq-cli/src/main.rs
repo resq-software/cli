@@ -20,14 +20,42 @@
 
 #![deny(missing_docs)]
 
-use clap::{Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand};
+use clap_complete::{generate, Shell};
 use resq_cli::commands;
+use tracing_subscriber::EnvFilter;
+
+const LONG_ABOUT: &str = "\
+ResQ developer CLI — audits, formatting, secrets scanning, git hooks, and six TUI explorers.
+
+Common commands:
+  resq audit           Run cargo/bun/uv audit across the workspace
+  resq secrets         Scan the repo for leaked secrets and credentials
+  resq format          Format Rust / TS / Python / C++ / C# in one pass
+  resq pre-commit      Run the full pre-commit gate (copyright, secrets, audit, format)
+  resq hooks           Inspect and maintain installed git hooks
+
+Run `resq <command> --help` for per-command options, or `resq completions <shell>`
+to install shell tab-completion.";
 
 /// Command-line arguments for the `ResQ` CLI.
 #[derive(Parser)]
 #[command(name = "resq")]
-#[command(version, about = "ResQ CLI tools", long_about = None)]
+#[command(version, about = "ResQ CLI tools", long_about = LONG_ABOUT)]
 pub struct Cli {
+    /// Increase log verbosity (`-v` info, `-vv` debug, `-vvv` trace). Overridden by `--quiet`.
+    #[arg(short, long, action = clap::ArgAction::Count, global = true)]
+    verbose: u8,
+
+    /// Suppress non-error output. Wins over `--verbose`.
+    #[arg(short, long, global = true)]
+    quiet: bool,
+
+    /// Disable colored output in this process. Set `NO_COLOR=1` to propagate to
+    /// child tools (cargo, bun, uv, …).
+    #[arg(long, global = true)]
+    no_color: bool,
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -66,12 +94,44 @@ enum Commands {
     Hooks(commands::hooks::HooksArgs),
     /// Generate AI-powered commit messages from staged changes
     Commit(commands::commit::CommitArgs),
+    /// Emit shell completions to stdout (bash, zsh, fish, elvish, powershell)
+    Completions {
+        /// Target shell for completion script.
+        shell: Shell,
+    },
+}
+
+/// Initialize tracing based on `-v` / `-q` / `--no-color` flags.
+///
+/// Default is `warn`; `-v` bumps to `info`, `-vv` to `debug`, `-vvv`+ to `trace`.
+/// `--quiet` forces `error` regardless of verbose count. If `RUST_LOG` is set
+/// in the environment it takes precedence over the computed level.
+fn init_tracing(verbose: u8, quiet: bool, no_color: bool) {
+    let level = if quiet {
+        "error"
+    } else {
+        match verbose {
+            0 => "warn",
+            1 => "info",
+            2 => "debug",
+            _ => "trace",
+        }
+    };
+
+    let filter = EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(level));
+
+    tracing_subscriber::fmt()
+        .with_env_filter(filter)
+        .with_ansi(!no_color)
+        .with_target(false)
+        .init();
 }
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
     let cli = Cli::parse();
+
+    init_tracing(cli.verbose, cli.quiet, cli.no_color);
 
     match cli.command {
         Commands::Copyright(args) => commands::copyright::run(&args)?,
@@ -90,6 +150,11 @@ async fn main() -> anyhow::Result<()> {
         Commands::Docs(args) => commands::docs::run(args)?,
         Commands::Hooks(args) => commands::hooks::run(args)?,
         Commands::Commit(args) => commands::commit::run(args).await?,
+        Commands::Completions { shell } => {
+            let mut cmd = Cli::command();
+            let bin = cmd.get_name().to_string();
+            generate(shell, &mut cmd, bin, &mut std::io::stdout());
+        }
     }
 
     Ok(())
