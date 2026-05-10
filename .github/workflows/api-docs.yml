@@ -59,14 +59,47 @@ jobs:
           ref: ${{ inputs.ref || github.ref }}
           persist-credentials: false
 
-      - name: Generate per-crate stub pages
-        # For each crate in `crates/*`, emit one Markdown page with:
-        #   - the crate name + version + description
-        #   - a link to docs.rs (canonical Rust API reference)
-        #   - the crate's README.md content (the human-facing docs)
-        # The actual rustdoc API is intentionally NOT duplicated here;
-        # docs.rs is the source of truth and links from these pages
-        # take users there.
+      - name: Install Rust nightly + cargo-doc-md
+        # cargo-doc-md is the rustdoc-JSON-to-markdown converter that
+        # produces real API references (modules, structs, traits,
+        # methods with full doc comments and examples). Rustdoc JSON
+        # is a nightly-only feature, so install nightly alongside the
+        # default stable toolchain. The tool is small and pure-Rust;
+        # `cargo install` rebuilds quickly when its version doesn't
+        # change between runs because the runner's cache reuses the
+        # cargo registry.
+        run: |
+          rustup toolchain install nightly --profile minimal --no-self-update
+          cargo install cargo-doc-md --locked
+
+      - name: Generate rustdoc markdown
+        # Run cargo-doc-md across the workspace. Output goes to
+        # target/doc-md/<crate_lib_name>/ (snake_case lib name, e.g.
+        # `resq_dsa`). Crates without a `lib.rs` (binary-only TUIs)
+        # produce no output here — the fallback step below handles
+        # those by rendering a README stub instead.
+        #
+        # `--no-deps` keeps the docs scoped to first-party crates;
+        # transitive dep docs are docs.rs's job.
+        run: |
+          cargo +nightly doc-md --workspace --no-deps || {
+            echo "::warning ::cargo-doc-md failed; relying on README stubs"
+          }
+          if [ -d target/doc-md ]; then
+            ls target/doc-md
+          fi
+
+      - name: Generate per-crate pages (rustdoc + README fallback)
+        # For each crate in `crates/*`:
+        #   - If cargo-doc-md emitted markdown for it, copy that tree
+        #     into OUTPUT_DIR/<crate>/ and inject a version banner.
+        #   - Otherwise (binary-only crate, or rustdoc-failed crate),
+        #     fall back to a README-stub: one Markdown file with
+        #     name + version + description + docs.rs link + the
+        #     crate's README content.
+        # Stubs land at OUTPUT_DIR/<crate>.md; rich crates at
+        # OUTPUT_DIR/<crate>/index.md plus per-module siblings. The
+        # splice handles both forms naturally.
         run: |
           mkdir -p "$OUTPUT_DIR"
           rm -rf "${OUTPUT_DIR:?}"/*
@@ -158,6 +191,22 @@ jobs:
           if not crates_dir.is_dir():
               raise SystemExit("missing crates/ directory; not a Rust workspace?")
 
+          # cargo-doc-md uses snake_case lib names (e.g. `resq_dsa`)
+          # for output dirs. Cargo crate names are hyphenated
+          # (`resq-dsa`); convert with `-` → `_` to look them up.
+          rustdoc_md_dir = pathlib.Path("target") / "doc-md"
+
+          def banner_for(meta: dict) -> str:
+              docs_rs_url = f"https://docs.rs/{meta['name']}/{meta['version']}"
+              crates_io_url = f"https://crates.io/crates/{meta['name']}"
+              return (
+                  f"> **Version:** `v{meta['version']}` · "
+                  f"**License:** `{meta['license']}` · "
+                  f"**Crate:** [crates.io]({crates_io_url}) · "
+                  f"**API docs:** [docs.rs]({docs_rs_url})\n\n"
+              )
+
+          import shutil
           rendered = 0
           for crate_dir in sorted(crates_dir.iterdir()):
               cargo_toml = crate_dir / "Cargo.toml"
@@ -167,6 +216,31 @@ jobs:
               if not meta["name"]:
                   continue
 
+              snake_name = meta["name"].replace("-", "_")
+              rustdoc_src = rustdoc_md_dir / snake_name
+              if rustdoc_src.is_dir():
+                  # Rich rustdoc output exists. Copy the whole tree
+                  # into OUTPUT_DIR/<crate>/ and inject the version
+                  # banner after the H1 of the landing index.md.
+                  dest = out_root / meta["name"]
+                  if dest.exists():
+                      shutil.rmtree(dest)
+                  shutil.copytree(rustdoc_src, dest)
+                  landing = dest / "index.md"
+                  if landing.is_file():
+                      text = landing.read_text(encoding="utf-8")
+                      h1 = re.match(r"(# [^\n]+\n+)", text)
+                      banner = banner_for(meta)
+                      if h1:
+                          text = text[: h1.end()] + banner + text[h1.end():]
+                      else:
+                          text = banner + text
+                      landing.write_text(text, encoding="utf-8")
+                  rendered += 1
+                  print(f"  rustdoc:  {meta['name']}")
+                  continue
+
+              # Fallback: README stub at OUTPUT_DIR/<crate>.md.
               docs_rs_url = f"https://docs.rs/{meta['name']}/{meta['version']}"
               crates_io_url = f"https://crates.io/crates/{meta['name']}"
 
@@ -207,6 +281,7 @@ jobs:
               dest = out_root / f"{meta['name']}.md"
               dest.write_text(page, encoding="utf-8")
               rendered += 1
+              print(f"  stub:     {meta['name']}")
 
           print(f"rendered {rendered} crate pages")
           if rendered == 0:
@@ -312,19 +387,33 @@ jobs:
           )
           print()
           print(
-              "Each entry below lists a crate published from the workspace. "
-              "Click through for the README plus a link to the canonical "
-              "[docs.rs](https://docs.rs) API reference."
+              "Each entry below lists a crate from the workspace. "
+              "Library crates link to their full rendered API reference; "
+              "binary-only crates show their README and link to "
+              "[docs.rs](https://docs.rs)."
           )
           print()
           print("## Crates")
           print()
-          for md in sorted(out.glob("*.md")):
-              name = md.stem
-              text = md.read_text(encoding="utf-8")
+
+          def version_of(text: str) -> str:
               m = re.search(r"\*\*Version:\*\*\s+`v([^`]+)`", text)
-              version = m.group(1) if m else "unknown"
-              print(f"- `{name}` — `v{version}`")
+              return m.group(1) if m else "unknown"
+
+          # Stub crates land as `<name>.md` at the top level.
+          # Rich crates land as `<name>/index.md` in their own dir.
+          # Collect both forms, dedupe by name, sort alphabetically.
+          entries: dict[str, str] = {}
+          for md in out.glob("*.md"):
+              entries[md.stem] = version_of(md.read_text(encoding="utf-8"))
+          for sub in out.iterdir():
+              if not sub.is_dir():
+                  continue
+              landing = sub / "index.md"
+              if landing.is_file():
+                  entries[sub.name] = version_of(landing.read_text(encoding="utf-8"))
+          for name in sorted(entries):
+              print(f"- `{name}` — `v{entries[name]}`")
           PY
 
       - name: Build pages index
