@@ -407,6 +407,44 @@ jobs:
                   f.write_text(new, encoding="utf-8")
           PY
 
+      - name: Strip .md extension from internal link targets
+        # Mintlify routes URLs without the `.md` extension. A
+        # markdown link like `[label](./foo.md)` is treated as a
+        # literal path that 404s in the rendered site, even when
+        # the target file exists. Drop `.md` (and collapse
+        # `/index.md` to its parent dir form) so links resolve
+        # natively. cargo-doc-md generally uses in-page anchors,
+        # not file links, but README content embedded into landing
+        # pages routinely carries `.md` suffixes.
+        working-directory: ${{ env.OUTPUT_DIR }}
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          link_re = re.compile(r'(?<!\!)\[([^\]]*)\]\(([^)]+)\)')
+
+          def strip_md(target: str) -> str:
+              first_seg = target.split("/", 1)[0]
+              if ":" in first_seg:
+                  return target
+              path, _, frag = target.partition("#")
+              frag = ("#" + frag) if frag else ""
+              if path.endswith("/index.md"):
+                  path = path[: -len("/index.md")] or "."
+              elif path.endswith(".md"):
+                  path = path[:-3]
+              return path + frag
+
+          for f in pathlib.Path(".").rglob("*.md"):
+              text = f.read_text(encoding="utf-8")
+              def fix(m: re.Match) -> str:
+                  return f"[{m.group(1)}]({strip_md(m.group(2))})"
+              new = link_re.sub(fix, text)
+              if new != text:
+                  f.write_text(new, encoding="utf-8")
+          PY
+
       - name: Escape MDX-special characters outside code regions
         # Mintlify parses .md as MDX. Literal `{ ... }` in prose is
         # interpreted as a JSX expression; literal `<X>` (e.g.
