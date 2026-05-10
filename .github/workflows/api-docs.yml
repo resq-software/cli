@@ -177,8 +177,17 @@ jobs:
           def parse_crate_meta(cargo_toml: pathlib.Path) -> dict:
               text = cargo_toml.read_text(encoding="utf-8")
               pkg = section(text, "package")
+              lib = section(text, "lib")
+              pkg_name = field_in(pkg, "name")
+              # Cargo's `[lib].name` overrides the default snake_case
+              # of the package name (e.g. resq-bin's lib is named
+              # `bin_explorer`). Use the explicit lib name when set;
+              # otherwise convert the package name `-` → `_` per
+              # Cargo's default.
+              lib_name = field_in(lib, "name") or pkg_name.replace("-", "_")
               return {
-                  "name": field_in(pkg, "name"),
+                  "name": pkg_name,
+                  "lib_name": lib_name,
                   "version": field_in(pkg, "version") or ws_version,
                   "description": field_in(pkg, "description"),
                   # Cargo allows `license.workspace = true` for
@@ -216,8 +225,7 @@ jobs:
               if not meta["name"]:
                   continue
 
-              snake_name = meta["name"].replace("-", "_")
-              rustdoc_src = rustdoc_md_dir / snake_name
+              rustdoc_src = rustdoc_md_dir / meta["lib_name"]
               if rustdoc_src.is_dir():
                   # Rich rustdoc output exists. Copy the whole tree
                   # into OUTPUT_DIR/<crate>/ and inject the version
@@ -286,6 +294,45 @@ jobs:
           print(f"rendered {rendered} crate pages")
           if rendered == 0:
               raise SystemExit("no crates found; aborting empty doc PR")
+          PY
+
+      - name: Prefix bare relative .md links with ./
+        # cargo-doc-md emits cross-references as bare relative paths
+        # (`config.md`, `commands/audit.md`). Mintlify only resolves
+        # explicitly-relative paths (`./`, `../`) and absolute paths
+        # (`/...`) — bare paths are flagged as broken.
+        #
+        # Same logic as the TypeScript template's prefix step: skip
+        # targets that are already qualified, prefix everything else
+        # with `./`.
+        working-directory: ${{ env.OUTPUT_DIR }}
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+
+          link_re = re.compile(r'(?<!\!)\[([^\]]*)\]\(([^)]+)\)')
+
+          def is_qualified(target: str) -> bool:
+              t = target.strip().split(None, 1)[0]
+              if t.startswith(("./", "../", "/", "#")):
+                  return True
+              if ":" in t.split("/", 1)[0]:
+                  return True
+              return False
+
+          for f in pathlib.Path(".").rglob("*.md"):
+              text = f.read_text(encoding="utf-8")
+              def fix(m: re.Match) -> str:
+                  label, target = m.group(1), m.group(2)
+                  if is_qualified(target):
+                      return m.group(0)
+                  if not target.endswith(".md") and ".md#" not in target:
+                      return m.group(0)
+                  return f"[{label}](./{target})"
+              new = link_re.sub(fix, text)
+              if new != text:
+                  f.write_text(new, encoding="utf-8")
           PY
 
       - name: Escape MDX-special characters outside code regions
